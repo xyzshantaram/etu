@@ -34,4 +34,5 @@ export const create = new Command('new')
     .argument('<name>', 'name to use for the project.')
     .argument('<rate>', 'hourly rate', Number)
     .argument('[initial-hours]', 'number of hours to log to start with', Number)
-    .action(action);
+    .action(action)
+    .showHelpAfterError();
