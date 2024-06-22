@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import * as storage from "./storage.ts";
 import { Result } from "@/oxide";
+import { colors } from "@/cliffy/ansi";
 
 export type Maybe<T> = T | undefined;
 
@@ -114,11 +115,16 @@ export const humanReadable = (ms: number) => {
 
 export const sessionName = (name: Maybe<string>) => name || "(untitled)";
 
-export const die = (code: number, args: any[]) => {
-    if (code === 0) console.log(...args);
-    else console.error("ERROR:", ...args);
+export const die = (code: number, msg: string) => {
+    if (code === 0) console.log(msg);
+    else console.error(msg);
     return Deno.exit(code);
 };
 
-export const scream = (...args: any[]) => die(1, args);
-export const exit = (...args: any[]) => die(0, args);
+const error = colors.bold.red;
+export const scream = (...args: any[]) => die(1, error(["ERROR:", ...args].join(" ")));
+export const exit = (...args: any[]) => die(0, args.join(" "));
+
+export const success = colors.bold.green;
+export const heading = colors.bold;
+export const info = colors.bold.blue;
