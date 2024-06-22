@@ -24,7 +24,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
                 else time += session.end - session.start;
             }
 
-            console.log(`Time spent in project ${project.name}`);
+            console.log(`Viewing project ${project.name}`);
 
             if (sessions.length === 0) {
                 scream("No sessions exist for the specified project");
@@ -39,13 +39,11 @@ const action = async ({ short, id }: ESummaryOpts) => {
                 );
             }
 
-            console.log(
-                `Total time spent: ${humanReadable(ongoingTime + time)}`,
-            );
+            console.log(`Total time spent: ${humanReadable(ongoingTime + time)}\n`);
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
             const currency = await storage.getConfigValue("currency");
             console.log(
-                `${timeHours.toFixed(2)} hours: ${currency}${(timeHours * project.rate).toFixed(2)}`,
+                `${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${currency}${(timeHours * project.rate).toFixed(2)}`,
             );
 
             if (!short) {
@@ -60,12 +58,18 @@ export const log = new Command("log")
         "-i --id <string>",
         "id of the project to summarize. Uses the default if not specified.",
     )
-    .option("--short", "Don't print the log of hours worked.")
+    .option("-s --short", "Don't print the log of hours worked.")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
     .action(action);
 
 function printLog(sessions: Session[]) {
-    console.log(JSON.stringify(sessions, null, 4));
+    console.log("\nSession log:");
+    for (const session of sessions) {
+        if (!session.end) continue;
+        console.log(`*** ${sessionName(session.name)}`)
+        console.log(`  start: ${new Date(session.start).toLocaleString()}`);
+        console.log(`  end: ${new Date(session.end).toLocaleString()}`);
+    }
 }
