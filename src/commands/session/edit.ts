@@ -61,6 +61,6 @@ const action = async ({ project }: EEditSessionOpts) => {
 };
 
 export const edit = new Command('edit')
-    .argument('-p --project', 'id of the project to edit. uses default project if not specified.')
+    .option('-p --project', 'id of the project to edit. uses default project if not specified.')
     .description('Edit a session of a project.')
     .action(action);
