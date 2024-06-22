@@ -19,7 +19,7 @@ const action = async ({ project }: EEditSessionOpts) => {
             const toDelete = await Select.prompt({
                 message: "Which session do you want to delete?",
                 options: choices,
-                transform: (v) => map[v],
+                transform: (v) => map[v].ulid,
             })
 
             if (await Confirm.prompt({ message: "Are you sure you want to delete this session?" })) {
