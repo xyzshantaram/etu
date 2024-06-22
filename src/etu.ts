@@ -3,7 +3,6 @@ import { create } from "./commands/new.ts";
 import { startClock } from "./commands/start.ts";
 import { stopClock } from "./commands/stop.ts";
 import { summary } from "./commands/summary.ts";
-import { log } from "./commands/log.ts";
 import { setDefault } from "./commands/default.ts";
 
 const createEtu = () => {
@@ -16,7 +15,7 @@ const createEtu = () => {
         .option('-p --path', 'The path to store the db at.')
         .showHelpAfterError();
 
-    [create, startClock, stopClock, summary, log, setDefault]
+    [create, startClock, stopClock, summary, setDefault]
         .forEach(setup => setup(etu));
 
     return etu;
