@@ -19,7 +19,7 @@ const action = async ({ project }: EStopOpts) => {
             await storage.endSession(session!, now);
             const name = sessionName(session?.value.name);
             const time = humanReadable(now - session!.value.start);
-            console.log(`Stopped session ${name}. Time worked: ${time}`)
+            console.log(`Stopped session ${name}. Time worked: ${time}`);
         },
     });
 };

@@ -20,16 +20,16 @@ const action = async ({ project }: EEditSessionOpts) => {
                 message: "Which session do you want to delete?",
                 options: choices,
                 transform: (v) => map[v].ulid,
-            })
+            });
 
             if (await Confirm.prompt({ message: "Are you sure you want to delete this session?" })) {
                 await storage.deleteSession(id, toDelete);
             }
         },
     });
-}
+};
 
-export const deleteSession = new Command('delete')
-    .option('-p --project', 'id of the project to delete. uses default project if not specified.')
-    .description('Delete a session of a project.')
+export const deleteSession = new Command("delete")
+    .option("-p --project", "id of the project to delete. uses default project if not specified.")
+    .description("Delete a session of a project.")
     .action(action);

@@ -18,37 +18,37 @@ const action = async ({ project }: EEditSessionOpts) => {
                 transform: (v) => map[v].ulid,
                 message: "Which session do you want to edit?",
                 options: choices,
-            })
+            });
 
-            let inp = '';
-            while (inp != 'exit') {
+            let inp = "";
+            while (inp != "exit") {
                 inp = await Select.prompt({
-                    message: 'What would you like to do?',
-                    options: ['change start time', 'change end time', 'rename', 'exit'],
-                })
+                    message: "What would you like to do?",
+                    options: ["change start time", "change end time", "rename", "exit"],
+                });
 
                 const acceptTime = async () => {
                     const s = await Input.prompt({
-                        message: 'What should I set the time to? (yyyy-mm-dd hh:mm:ss)',
-                        validate: (s) => /\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/.test(s)
+                        message: "What should I set the time to? (yyyy-mm-dd hh:mm:ss)",
+                        validate: (s) => /\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/.test(s),
                     });
 
                     return new Date(s).valueOf();
-                }
+                };
 
                 switch (inp) {
-                    case 'change start time': {
+                    case "change start time": {
                         const start = await acceptTime();
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, start });
                         break;
                     }
-                    case 'change end time': {
+                    case "change end time": {
                         const end = await acceptTime();
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, end });
                         break;
                     }
-                    case 'rename': {
-                        const name = await Input.prompt('What should the new name be?');
+                    case "rename": {
+                        const name = await Input.prompt("What should the new name be?");
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, name });
                         break;
                     }
@@ -60,7 +60,7 @@ const action = async ({ project }: EEditSessionOpts) => {
     });
 };
 
-export const edit = new Command('edit')
-    .option('-p --project', 'id of the project to edit. uses default project if not specified.')
-    .description('Edit a session of a project.')
+export const edit = new Command("edit")
+    .option("-p --project", "id of the project to edit. uses default project if not specified.")
+    .description("Edit a session of a project.")
     .action(action);

@@ -107,9 +107,9 @@ export async function deleteProject(id: string) {
 }
 
 export const deleteSession = async (id: string, toDelete: string) => {
-    await kv.delete(['projects', id, 'sessions', toDelete]);
-}
+    await kv.delete(["projects", id, "sessions", toDelete]);
+};
 
 export const editSession = async (proj: string, ulid: string, body: Session) => {
-    await kv.set(['projects', proj, 'sessions', ulid], body);
-}
+    await kv.set(["projects", proj, "sessions", ulid], body);
+};

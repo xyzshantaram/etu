@@ -46,7 +46,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
             console.log(`${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${amt}`);
 
             if (!short) {
-                printLog(sessions.map(entry => entry.value));
+                printLog(sessions.map((entry) => entry.value));
             }
         },
     });

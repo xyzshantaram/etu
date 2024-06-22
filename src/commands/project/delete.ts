@@ -17,7 +17,10 @@ const action = async ({ project }: EDeleteOpts) => {
             );
             if (
                 await Confirm.prompt(
-                    { message: `THIS CANNOT BE UNDONE! Are you sure you want to delete the project ${project.name} with ID ${project.slug}?` }
+                    {
+                        message:
+                            `THIS CANNOT BE UNDONE! Are you sure you want to delete the project ${project.name} with ID ${project.slug}?`,
+                    },
                 )
             ) {
                 await storage.deleteProject(id);
