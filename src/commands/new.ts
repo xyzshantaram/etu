@@ -1,6 +1,6 @@
 import { Command } from "@/commander";
 import { Maybe, slugify, timeMs } from "../utils.ts";
-import { EtuStorage } from "../storage.ts";
+import * as storage from "../storage.ts";
 
 interface ENewOpts {
     id: string;
@@ -8,23 +8,32 @@ interface ENewOpts {
 
 const action = async (name: string, rate: number, initialHours: Maybe<number>, { id }: ENewOpts) => {
     if (id) {
-        const project = await EtuStorage.getProjectById(id);
+        const project = await storage.getProjectById(id);
         if (project.isSome()) throw new Error(`Project with id ${id} already exists.`);
     }
 
+    if (id === 'default') {
+        throw new Error("You can't use that as a slug!");
+    }
+
+    if (slugify(id) === 'default') {
+        throw new Error("You can't use that as a name!");
+    }
+
     const slug = id || slugify(name);
-    await EtuStorage.putProject({ name, rate, slug });
+    await storage.putProject({ name, rate, slug });
 
     if (initialHours) {
-        const currentTime = new Date().valueOf();
-        await EtuStorage.putSession(slug, {
+        const currentTime = Date.now();
+        await storage.putSession(slug, {
             name: "Initial hours",
             start: currentTime - timeMs({ h: initialHours }),
             end: currentTime
         });
     }
 
-    await EtuStorage.setDefaultProject(slug);
+    console.log(`Created project "${name}" with id ${slug}. Rate is ${storage.getCurrency()}${rate}/hr. ${initialHours ? "Initial hours: " + initialHours + "." : ""}`);
+    await storage.setDefaultProject(slug);
 }
 
 export const create = (cmd: Command) => {
