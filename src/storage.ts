@@ -14,66 +14,64 @@ const dataPath = join(dataDir, 'etu');
 await Deno.mkdir(dataPath, { recursive: true });
 const kv = await Deno.openKv(join(dataPath, 'etu.db'));
 
-export class EtuStorage {
-    static async *getSessions(id: string) {
-        for await (const session of kv.list<Session>({ prefix: ['projects', id, 'sessions'] })) {
-            yield session.value;
-        }
+export async function* getSessions(id: string) {
+    for await (const session of kv.list<Session>({ prefix: ['projects', id, 'sessions'] })) {
+        yield session.value;
     }
-    static async getDefaultProject(): Promise<Option<string>> {
-        const project = await kv.get<string>(['projects', 'default']);
-        return Option(project.value);
+}
+export async function getDefaultProject(): Promise<Option<string>> {
+    const project = await kv.get<string>(['projects', 'default']);
+    return Option(project.value);
+}
+
+export async function getProjectById(id: string): Promise<Option<Project>> {
+    const project = await kv.get<Project>(['projects', id]);
+    if (project.value) return Some(project.value);
+    return None;
+}
+
+export async function putProject(project: Project) {
+    await kv.set(['projects', project.slug], project);
+}
+
+export async function putSession(id: string, sess: Session) {
+    await kv.set(['projects', id, 'sessions', ulid()], sess);
+}
+
+export async function getLastSession(id: string) {
+    return await kv
+        .list<Session>({ prefix: ['projects', id, 'sessions'] }, { limit: 1, reverse: true })
+        .next()
+        .then(itm => itm.value);
+}
+
+export async function endSession(identifier: Deno.KvEntry<Session>, end: number): Promise<void>;
+export async function endSession(identifier: string, end: number): Promise<void>;
+export async function endSession(identifier: unknown, end: number) {
+    if (typeof identifier === 'string') {
+        await getLastSession(identifier)
+            .then(async item => item && await kv.set(item.key, { ...item.value, end }));
     }
-
-    static async getProjectById(id: string): Promise<Option<Project>> {
-        const project = await kv.get<Project>(['projects', id]);
-        if (project.value) return Some(project.value);
-        return None;
-    }
-
-    static async putProject(project: Project) {
-        await kv.set(['projects', project.slug], project);
-    }
-
-    static async putSession(id: string, sess: Session) {
-        await kv.set(['projects', id, 'sessions', ulid()], sess);
-    }
-
-    static async getLastSession(id: string) {
-        return await kv
-            .list<Session>({ prefix: ['projects', id, 'sessions'] }, { limit: 1, reverse: true })
-            .next()
-            .then(itm => itm.value);
-    }
-
-    static async endSession(identifier: Deno.KvEntry<Session>, end: number): Promise<void>;
-    static async endSession(identifier: string, end: number): Promise<void>;
-    static async endSession(identifier: unknown, end: number) {
-        if (typeof identifier === 'string') {
-            await this.getLastSession(identifier)
-                .then(async item => item && await kv.set(item.key, { ...item.value, end }));
-        }
-        else {
-            const entry = identifier as Deno.KvEntry<Session>;
-            await kv.set(entry.key, { ...entry.value, end });
-        }
-
+    else {
+        const entry = identifier as Deno.KvEntry<Session>;
+        await kv.set(entry.key, { ...entry.value, end });
     }
 
-    static async setDefaultProject(id: string): Promise<Result<null, string>> {
-        const project = await EtuStorage.getProjectById(id);
-        if (project.isNone()) return Err(`Project ${id} does not exist.`);
-        await kv.set(['projects', 'default'], id);
+}
 
-        return Ok(null);
-    }
+export async function setDefaultProject(id: string): Promise<Result<null, string>> {
+    const project = await getProjectById(id);
+    if (project.isNone()) return Err(`Project ${id} does not exist.`);
+    await kv.set(['projects', 'default'], id);
 
-    static async getCurrency() {
-        const currency = await kv.get<string>(['config', 'currency']);
-        return currency.value || "$";
-    }
+    return Ok(null);
+}
 
-    static async setCurrency(symbol: string) {
-        await kv.set(['config', 'currency'], symbol);
-    }
+export async function getCurrency() {
+    const currency = await kv.get<string>(['config', 'currency']);
+    return currency.value || "$";
+}
+
+export async function setCurrency(symbol: string) {
+    await kv.set(['config', 'currency'], symbol);
 }

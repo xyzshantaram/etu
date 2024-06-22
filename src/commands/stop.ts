@@ -1,6 +1,6 @@
 import { Command } from "@/commander";
 import { match } from "@/oxide";
-import { EtuStorage } from "../storage.ts";
+import * as storage from "../storage.ts";
 import { getProjectId } from "../utils.ts";
 
 interface EStopOpts {
@@ -10,7 +10,11 @@ interface EStopOpts {
 const action = async ({ id }: EStopOpts) => {
     return await match(await getProjectId(id), {
         Err: (msg: string) => { throw new Error(msg) },
-        Ok: async (id: string) => { await EtuStorage.endSession(id, new Date().valueOf()) }
+        Ok: async (id: string) => {
+            const session = await storage.getLastSession(id);
+            if (!session || !!session.value.end) throw new Error("No ongoing session found for given project.");
+            await storage.endSession(session, Date.now());
+        }
     });
 }
 

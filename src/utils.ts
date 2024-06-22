@@ -1,4 +1,4 @@
-import { EtuStorage } from "./storage.ts";
+import * as storage from "./storage.ts";
 import { Result } from "@/oxide";
 
 export type Maybe<T> = T | undefined;
@@ -44,11 +44,11 @@ export const slugify = (str: string) => {
  */
 export const getProjectId = async (id: Maybe<string>): Promise<Result<string, string>> => {
     if (!id) {
-        const defaultId = await EtuStorage.getDefaultProject();
+        const defaultId = await storage.getDefaultProject();
         return defaultId.okOr("No project specified and no default project set.");
     }
 
-    const specified = await EtuStorage.getProjectById(id);
+    const specified = await storage.getProjectById(id);
     return specified.map(v => v.slug).okOr("Specified project does not exist.");
 }
 

@@ -1,6 +1,6 @@
 import { Command } from "@/commander";
 import { Maybe, getProjectId } from "../utils.ts";
-import { EtuStorage } from "../storage.ts";
+import * as storage from "../storage.ts";
 import { match } from "@/oxide";
 
 interface EStartOpts {
@@ -11,10 +11,11 @@ const action = async (name: Maybe<string>, { id }: EStartOpts) => {
     return match(await getProjectId(id), {
         Err: (msg: string) => { throw new Error(msg) },
         Ok: async (id: string) => {
-            await EtuStorage.putSession(id, {
-                name,
-                start: new Date().valueOf()
-            })
+            const currentTime = Date.now();
+            await storage.putSession(id, { name, start: currentTime });
+            const project = await storage.getProjectById(id);
+
+            console.log(`Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()}`);
         }
     });
 }

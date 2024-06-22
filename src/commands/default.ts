@@ -1,9 +1,9 @@
 import { Command } from "@/commander";
-import { EtuStorage } from "../storage.ts";
+import * as storage from "../storage.ts";
 import { match } from "@/oxide";
 
 const action = async (id: string) => {
-    match(await EtuStorage.setDefaultProject(id), {
+    match(await storage.setDefaultProject(id), {
         Ok: _ => { },
         Err: msg => { throw new Error(msg) }
     });

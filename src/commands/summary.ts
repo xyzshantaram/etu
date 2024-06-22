@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
-import { EtuStorage } from "../storage.ts";
+import * as storage from "../storage.ts";
 import { match } from "@/oxide";
-import { Session, getProjectId, humanReadable, msToTime, sessionName, timeMs } from "../utils.ts";
+import { Session, getProjectId, humanReadable, sessionName, timeMs } from "../utils.ts";
 
 interface ESummaryOpts {
     log: boolean;
@@ -16,9 +16,9 @@ const action = async ({ log, id }: ESummaryOpts) => {
             let time = 0;
             let ongoingTime = 0;
 
-            const project = (await EtuStorage.getProjectById(id)).unwrap();
+            const project = (await storage.getProjectById(id)).unwrap();
 
-            for await (const session of EtuStorage.getSessions(id)) {
+            for await (const session of storage.getSessions(id)) {
                 sessions.push(session);
                 if (!session.end) ongoingTime += Date.now() - session.start;
                 else time += session.end - session.start;
@@ -37,7 +37,7 @@ const action = async ({ log, id }: ESummaryOpts) => {
 
             console.log(`Total time spent: ${humanReadable(ongoingTime + time)}`);
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
-            const currency = await EtuStorage.getCurrency();
+            const currency = await storage.getCurrency();
             console.log(`${timeHours.toFixed(2)} hours: ${currency}${(timeHours * project.rate).toFixed(2)}`);
 
             if (log) {
