@@ -49,7 +49,7 @@ export const getProjectId = async (id: Maybe<string>): Promise<Result<string, st
     }
 
     const specified = await EtuStorage.getProjectById(id);
-    return specified.okOr("Specified project does not exist.");
+    return specified.map(v => v.slug).okOr("Specified project does not exist.");
 }
 
 type TimeUnit = 'y' | 'mo' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms';
@@ -69,3 +69,25 @@ export const timeMs = (opts: Partial<Record<TimeUnit, number>>) =>
     (Object.keys(opts) as TimeUnit[])
         .map((u) => msIn[u] * (opts[u] || 0))
         .reduce((sum, i) => sum + i, 0);
+
+const descTime: TimeUnit[] = ['y', 'mo', 'w', 'd', 'h', 'm', 's', 'ms'];
+
+export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
+    const result: Partial<Record<TimeUnit, number>> = {};
+
+    for (const unit of descTime) {
+        if (ms >= msIn[unit]) {
+            result[unit] = Math.floor(ms / msIn[unit]);
+            ms %= msIn[unit];
+        }
+    }
+
+    return result;
+};
+
+export const humanReadable = (ms: number) => {
+    console.warn("TODO: implement");
+    return JSON.stringify(msToTime(ms));
+}
+
+export const sessionName = (name: Maybe<string>) => name || "(untitled)";
