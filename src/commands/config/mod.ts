@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, scream } from "../../utils.ts";
+import { info, Maybe, scream, success } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 
 const defaults = {
@@ -28,14 +28,14 @@ const action = async (key: Maybe<string>, value: Maybe<string>) => {
 
     if (key && value) {
         await storage.setConfigValue(key, value);
-        return console.log(`Successfully set ${key} to ${value}`);
+        return console.log(success(`Successfully set ${key} to ${value}`));
     } else if (key && !value) {
         const item = await storage.getConfigValue(key);
-        return console.log(`${key}: ${item}`);
+        return console.log(info(`${key}: ${item}`));
     }
     for (const k of validKeys) {
         const v = await storage.getConfigValue(k);
-        console.log(`${k}: ${v === "" ? "<nothing>" : v}`);
+        console.log(info(`${k}: ${v === "" ? "<nothing>" : v}`));
     }
 };
 

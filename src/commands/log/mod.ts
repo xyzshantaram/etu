@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
@@ -24,7 +24,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
                 else time += session.end - session.start;
             }
 
-            console.log(`Viewing project ${project.name}`);
+            console.log(`Viewing project ${heading(project.name)}`);
 
             if (sessions.length === 0) {
                 scream("No sessions exist for the specified project");
@@ -39,12 +39,11 @@ const action = async ({ short, id }: ESummaryOpts) => {
                 );
             }
 
-            console.log(`Total time spent: ${humanReadable(ongoingTime + time)}\n`);
+            console.log(`Total time spent: ${heading(humanReadable(ongoingTime + time))}\n`);
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
             const currency = await storage.getConfigValue("currency");
-            console.log(
-                `${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${currency}${(timeHours * project.rate).toFixed(2)}`,
-            );
+            const amt = heading(`${currency}${(timeHours * project.rate).toFixed(2)}`);
+            console.log(`${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${amt}`);
 
             if (!short) {
                 printLog(sessions);
@@ -65,10 +64,10 @@ export const log = new Command("log")
     .action(action);
 
 function printLog(sessions: Session[]) {
-    console.log("\nSession log:");
+    console.log(heading("\nSession log:"));
     for (const session of sessions) {
         if (!session.end) continue;
-        console.log(`*** ${sessionName(session.name)}`)
+        console.log(`**** ${heading(sessionName(session.name))} ****`);
         console.log(`  start: ${new Date(session.start).toLocaleString()}`);
         console.log(`  end: ${new Date(session.end).toLocaleString()}`);
     }

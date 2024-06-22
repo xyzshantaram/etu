@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, scream, slugify, timeMs } from "../../utils.ts";
+import { heading, info, Maybe, scream, slugify, timeMs } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 
 interface ENewOpts {
@@ -31,9 +31,10 @@ const action = async (
         });
     }
 
+    const rateStr = info(`${currency}${rate}/hr`);
+    const hours = initialHours ? "Initial hours: " + initialHours + "." : "";
     console.log(
-        `Created project "${name}" with id ${slug}. Rate is ${currency}${rate}/hr. ${initialHours ? "Initial hours: " + initialHours + "." : ""
-        }`,
+        `Created project "${heading(name)}" with id ${heading(slug)}. Rate is ${rateStr}. ${hours}`,
     );
     await storage.setDefaultProject(slug);
 };
