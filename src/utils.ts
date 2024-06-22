@@ -27,22 +27,6 @@ export const slugify = (str: string) => {
         .replace(/-+/g, "-"); // remove consecutive hyphens
 };
 
-/**
- * Retrieves the project ID based on the provided ID or the default project ID if no ID is specified.
- *
- * @param {Maybe<string>} id The ID of the project to retrieve. If not provided, the default project ID will be used.
- * @returns {Promise<Result<string, string>>} A promise that resolves to a `Result` object containing the project ID if successful, or an error message if not.
- *
- * @example
- * ```ts
- * const projectId = await getProjectId("project-123");
- * if (projectId.isOk()) {
- *   console.log("Project ID:", projectId.unwrap());
- * } else {
- *   console.error("Error:", projectId.unwrapErr());
- * }
- * ```
- */
 export const getProjectId = async (
     id: Maybe<string>,
 ): Promise<Result<string, string>> => {

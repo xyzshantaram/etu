@@ -1,6 +1,6 @@
 # etu
 
-A fully-featured CLI time-clock for freelancers.
+A CLI time-clock for freelancers.
 
 ## Roadmap
 
