@@ -19,8 +19,9 @@ export async function* getSessions(id: string) {
         yield session.value;
     }
 }
+
 export async function getDefaultProject(): Promise<Option<string>> {
-    const project = await kv.get<string>(['projects', 'default']);
+    const project = await kv.get<string>(['config', 'default-project']);
     return Option(project.value);
 }
 
@@ -62,7 +63,7 @@ export async function endSession(identifier: unknown, end: number) {
 export async function setDefaultProject(id: string): Promise<Result<null, string>> {
     const project = await getProjectById(id);
     if (project.isNone()) return Err(`Project ${id} does not exist.`);
-    await kv.set(['projects', 'default'], id);
+    await kv.set(['config', 'default-project'], id);
 
     return Ok(null);
 }
