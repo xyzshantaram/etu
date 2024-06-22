@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, getProjectId } from "../../utils.ts";
+import { Maybe, getProjectId, scream } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
 
@@ -9,7 +9,7 @@ interface EStartOpts {
 
 const action = async (name: Maybe<string>, { id }: EStartOpts) => {
     return match(await getProjectId(id), {
-        Err: (msg: string) => { throw new Error(msg) },
+        Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const currentTime = Date.now();
             await storage.putSession(id, { name, start: currentTime });

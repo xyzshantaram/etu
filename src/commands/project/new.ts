@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, slugify, timeMs } from "../../utils.ts";
+import { Maybe, scream, slugify, timeMs } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 
 interface ENewOpts {
@@ -9,7 +9,7 @@ interface ENewOpts {
 const action = async (name: string, rate: number, initialHours: Maybe<number>, { id }: ENewOpts) => {
     if (id) {
         const project = await storage.getProjectById(id);
-        if (project.isSome()) throw new Error(`Project with id ${id} already exists.`);
+        if (project.isSome()) scream(`Project with id ${id} already exists.`);
     }
 
     const slug = id || slugify(name);

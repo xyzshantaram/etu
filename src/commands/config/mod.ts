@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe } from "../../utils.ts";
+import { Maybe, scream } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 
 const defaults = {
@@ -22,7 +22,7 @@ const isValidKey = (k: Maybe<string>): k is keyof typeof defaults => {
 }
 
 const action = async (key: Maybe<string>, value: Maybe<string>) => {
-    if (key && !isValidKey(key)) throw new Error(`${key} is not a valid configuration key.`);
+    if (key && !isValidKey(key)) scream(`${key} is not a valid configuration key.`);
 
     if (key && value) {
         await storage.setConfigValue(key, value);

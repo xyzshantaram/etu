@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { Session, getProjectId, humanReadable, sessionName, timeMs } from "../../utils.ts";
+import { Session, getProjectId, humanReadable, scream, sessionName, timeMs } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
@@ -10,7 +10,7 @@ interface ESummaryOpts {
 
 const action = async ({ short, id }: ESummaryOpts) => {
     return match(await getProjectId(id), {
-        Err: (msg: string) => { throw new Error(msg) },
+        Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const sessions = [];
             let time = 0;
@@ -27,7 +27,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
             console.log(`Time spent in project ${project.name}`);
 
             if (sessions.length === 0) {
-                throw new Error("No sessions exist for the specified project");
+                scream("No sessions exist for the specified project");
             }
 
             if (ongoingTime) {

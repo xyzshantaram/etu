@@ -1,13 +1,13 @@
 import { join } from "https://deno.land/std@0.204.0/path/join.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
-import { Project, Session } from "./utils.ts";
+import { Project, Session, scream } from "./utils.ts";
 import { None, Option, Result, Some, Err, Ok } from "@/oxide";
 import { ulid } from "@/ulid";
 
 const dataDir = dir('data');
-if (!dataDir) throw new Error("Couldn't find your data directory! Bailing.");
+if (!dataDir) scream("Couldn't find your data directory! Bailing.");
 
-const dataPath = join(dataDir, 'etu');
+const dataPath = join(dataDir!, 'etu');
 await Deno.mkdir(dataPath, { recursive: true });
 const kv = await Deno.openKv(join(dataPath, 'etu.db'));
 

@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import { match } from "@/oxide";
 import * as storage from "../../storage.ts";
-import { getProjectId } from "../../utils.ts";
+import { getProjectId, scream } from "../../utils.ts";
 
 interface EStopOpts {
     id: string;
@@ -9,11 +9,11 @@ interface EStopOpts {
 
 const action = async ({ id }: EStopOpts) => {
     return await match(await getProjectId(id), {
-        Err: (msg: string) => { throw new Error(msg) },
+        Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const session = await storage.getLastSession(id);
-            if (!session || !!session.value.end) throw new Error("No ongoing session found for given project.");
-            await storage.endSession(session, Date.now());
+            if (!session || !!session.value.end) scream("No ongoing session found for given project.");
+            await storage.endSession(session!, Date.now());
         }
     });
 }

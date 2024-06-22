@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import * as storage from "./storage.ts";
 import { Result } from "@/oxide";
 
@@ -121,3 +122,11 @@ export const humanReadable = (ms: number) => {
 }
 
 export const sessionName = (name: Maybe<string>) => name || "(untitled)";
+
+export const die = (code: number, ...args: any[]) => {
+    console.log(...args);
+    return Deno.exit(code);
+}
+
+export const scream = (...args: any[]) => die(1, args);
+export const exit = (...args: any[]) => die(0, args);
