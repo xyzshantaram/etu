@@ -12,7 +12,7 @@ export interface Project {
 export interface Session {
     name?: string;
     start: number;
-    end: number;
+    end?: number;
 }
 
 /**

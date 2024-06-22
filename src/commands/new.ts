@@ -16,7 +16,7 @@ const action = async (name: string, rate: number, initialHours: Maybe<number>, {
 
     if (initialHours) {
         const currentTime = new Date().valueOf();
-        await EtuStorage.setSession(id, {
+        await EtuStorage.putSession(id, {
             name: "Initial hours",
             start: currentTime - timeMs({ h: initialHours }),
             end: currentTime

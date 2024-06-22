@@ -30,8 +30,16 @@ export class EtuStorage {
         await kv.set(['projects', project.slug], project);
     }
 
-    static async setSession(id: string, sess: Session) {
-        await kv.set(['projects', id, 'sessions', ulid()], sess);
+    static async putSession(id: string, sess: Session) {
+        await kv.set(['projects', id, 'sessions', ulid()], { end: -1, ...sess });
+    }
+
+    static async endSession(id: string, end: number) {
+        return await kv
+            .list<Session>({ prefix: ['projects', id, 'sessions'] }, { limit: 1, reverse: true })
+            .next()
+            .then(itm => itm.value)
+            .then(async item => item && await kv.set(item.key, { ...item.value, end }));
     }
 
     static async setDefaultProject(id: string): Promise<Result<null, string>> {
