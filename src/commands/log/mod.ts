@@ -17,6 +17,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
             let ongoingTime = 0;
 
             const project = (await storage.getProjectById(id)).unwrap();
+            const advance = project.advance || 0;
 
             for await (const session of storage.getSessions(id)) {
                 sessions.push(session);
@@ -40,7 +41,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
             }
 
             console.log(`Total time spent: ${heading(humanReadable(ongoingTime + time))}\n`);
-            const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
+            const timeHours = (ongoingTime + time) / timeMs({ h: 1 }) - advance;
             const currency = await storage.getConfigValue("currency");
             const amt = heading(`${currency}${(timeHours * project.rate).toFixed(2)}`);
             console.log(`${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${amt}`);

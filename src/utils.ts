@@ -9,6 +9,7 @@ export interface Project {
     name: string;
     rate: number;
     slug: string;
+    advance?: number;
 }
 
 export interface Session {
