@@ -25,9 +25,9 @@ export class EtuStorage {
         return Option(project.value);
     }
 
-    static async getProjectById(id: string): Promise<Option<string>> {
+    static async getProjectById(id: string): Promise<Option<Project>> {
         const project = await kv.get<Project>(['projects', id]);
-        if (project.value) return Some(id);
+        if (project.value) return Some(project.value);
         return None;
     }
 
@@ -53,5 +53,14 @@ export class EtuStorage {
         await kv.set(['projects', 'default'], id);
 
         return Ok(null);
+    }
+
+    static async getCurrency() {
+        const currency = await kv.get<string>(['config', 'currency']);
+        return currency.value || "$";
+    }
+
+    static async setCurrency(symbol: string) {
+        await kv.set(['config', 'currency'], symbol);
     }
 }
