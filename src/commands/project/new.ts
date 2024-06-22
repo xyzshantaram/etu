@@ -24,7 +24,7 @@ const action = async (name: string, rate: number, initialHours: Maybe<number>, {
         });
     }
 
-    console.log(`Created project "${name}" with id ${slug}. Rate is ${storage.getCurrency()}${rate}/hr. ${initialHours ? "Initial hours: " + initialHours + "." : ""}`);
+    console.log(`Created project "${name}" with id ${slug}. Rate is ${storage.getConfigValue('currency')}${rate}/hr. ${initialHours ? "Initial hours: " + initialHours + "." : ""}`);
     await storage.setDefaultProject(slug);
 }
 

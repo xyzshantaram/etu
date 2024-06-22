@@ -68,11 +68,12 @@ export async function setDefaultProject(id: string): Promise<Result<null, string
     return Ok(null);
 }
 
-export async function getCurrency() {
-    const currency = await kv.get<string>(['config', 'currency']);
-    return currency.value || "$";
+export async function getConfigValue(key: string) {
+    // deno-lint-ignore no-explicit-any
+    const entry = await kv.get<any>(['config', key]);
+    return entry.value;
 }
 
-export async function setCurrency(symbol: string) {
-    await kv.set(['config', 'currency'], symbol);
+export async function setConfigValue(key: string, value: string) {
+    await kv.set(['config', key], value);
 }

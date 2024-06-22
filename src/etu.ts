@@ -1,6 +1,6 @@
 import { Command } from '@/commander';
 
-import { config } from "./commands/config/mod.ts";
+import { config, setupDefaults } from "./commands/config/mod.ts";
 import { log } from "./commands/log/mod.ts";
 import { session } from "./commands/session/mod.ts";
 import { project } from "./commands/project/mod.ts";
@@ -21,5 +21,6 @@ const createEtu = () => {
 
 if (import.meta.main) {
     const etu = createEtu();
+    await setupDefaults();
     etu.parse(Deno.args, { from: "user" });
 }

@@ -37,7 +37,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
 
             console.log(`Total time spent: ${humanReadable(ongoingTime + time)}`);
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
-            const currency = await storage.getCurrency();
+            const currency = await storage.getConfigValue('currency');
             console.log(`${timeHours.toFixed(2)} hours: ${currency}${(timeHours * project.rate).toFixed(2)}`);
 
             if (!short) {
