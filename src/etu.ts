@@ -12,7 +12,6 @@ const createEtu = () => {
         .name('etu')
         .description('A simple time-tracker application.')
         .version('0.0.1')
-        .option('-p --path', 'The path to store the db at.')
         .showHelpAfterError();
 
     [create, startClock, stopClock, summary, setDefault]
