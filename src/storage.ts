@@ -17,7 +17,7 @@ export async function* getSessions(id: string) {
             prefix: ["projects", id, "sessions"],
         })
     ) {
-        yield session.value;
+        yield session;
     }
 }
 
@@ -104,4 +104,8 @@ export async function deleteProject(id: string) {
     }
 
     await Promise.all(keys.map((key) => kv.delete(key)));
+}
+
+export const deleteSession = async (id: string, toDelete: string) => {
+    await kv.delete(['projects', id, 'sessions', toDelete]);
 }

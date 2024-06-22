@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { getProjectId, Maybe, scream } from "../../utils.ts";
+import { getProjectId, Maybe, scream, sessionName } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
 
@@ -8,6 +8,7 @@ interface EStartOpts {
 }
 
 const action = async (name: Maybe<string>, { project }: EStartOpts) => {
+    name = sessionName(name);
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {

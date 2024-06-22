@@ -20,8 +20,8 @@ const action = async ({ short, project }: ESummaryOpts) => {
 
             for await (const session of storage.getSessions(id)) {
                 sessions.push(session);
-                if (!session.end) ongoingTime += Date.now() - session.start;
-                else time += session.end - session.start;
+                if (!session.value.end) ongoingTime += Date.now() - session.value.start;
+                else time += session.value.end - session.value.start;
             }
 
             console.log(`Viewing project ${heading(project.name)}`);
@@ -32,7 +32,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
 
             if (ongoingTime) {
                 console.log(
-                    `Current session: ${sessionName(sessions.at(-1)?.name)}`,
+                    `Current session: ${sessionName(sessions.at(-1)?.value.name)}`,
                 );
                 console.log(
                     `Time spent in current session: ${humanReadable(ongoingTime)}\n`,
@@ -46,7 +46,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
             console.log(`${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${amt}`);
 
             if (!short) {
-                printLog(sessions);
+                printLog(sessions.map(entry => entry.value));
             }
         },
     });
