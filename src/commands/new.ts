@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, timeMs } from "../utils.ts";
+import { Maybe, slugify, timeMs } from "../utils.ts";
 import { EtuStorage } from "../storage.ts";
 
 interface ENewOpts {
@@ -12,11 +12,12 @@ const action = async (name: string, rate: number, initialHours: Maybe<number>, {
         if (project.isSome()) throw new Error(`Project with id ${id} already exists.`);
     }
 
-    await EtuStorage.setProject({ name, rate, slug: id });
+    const slug = id || slugify(name);
+    await EtuStorage.putProject({ name, rate, slug });
 
     if (initialHours) {
         const currentTime = new Date().valueOf();
-        await EtuStorage.putSession(id, {
+        await EtuStorage.putSession(slug, {
             name: "Initial hours",
             start: currentTime - timeMs({ h: initialHours }),
             end: currentTime
