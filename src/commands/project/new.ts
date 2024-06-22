@@ -12,14 +12,6 @@ const action = async (name: string, rate: number, initialHours: Maybe<number>, {
         if (project.isSome()) throw new Error(`Project with id ${id} already exists.`);
     }
 
-    if (id === 'default') {
-        throw new Error("You can't use that as a slug!");
-    }
-
-    if (slugify(id) === 'default') {
-        throw new Error("You can't use that as a name!");
-    }
-
     const slug = id || slugify(name);
     await storage.putProject({ name, rate, slug });
 
