@@ -1,11 +1,17 @@
-import { Command } from "@commander";
+import { Command } from "@/commander";
+import { match } from "@/oxide";
+import { EtuStorage } from "../storage.ts";
+import { getProjectId } from "../utils.ts";
 
 interface EStopOpts {
     id: string;
 }
 
-const action = ({ id }: EStopOpts) => {
-
+const action = async ({ id }: EStopOpts) => {
+    return await match(await getProjectId(id), {
+        Err: (msg: string) => { throw new Error(msg) },
+        Ok: async (id: string) => { await EtuStorage.endSession(id, new Date().valueOf()) }
+    });
 }
 
 export const stopClock = (cmd: Command) => {
