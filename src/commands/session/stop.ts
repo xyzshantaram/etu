@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import { match } from "@/oxide";
 import * as storage from "../../storage.ts";
-import { getProjectId, scream } from "../../utils.ts";
+import { getProjectId, humanReadable, scream, sessionName } from "../../utils.ts";
 
 interface EStopOpts {
     project: string;
@@ -15,7 +15,11 @@ const action = async ({ project }: EStopOpts) => {
             if (!session || !!session.value.end) {
                 scream("No ongoing session found for given project.");
             }
-            await storage.endSession(session!, Date.now());
+            const now = Date.now();
+            await storage.endSession(session!, now);
+            const name = sessionName(session?.value.name);
+            const time = humanReadable(now - session!.value.start);
+            console.log(`Stopped session ${name}. Time worked: ${time}`)
         },
     });
 };
