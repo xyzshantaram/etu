@@ -1,12 +1,29 @@
-import { Command } from "@commander";
-import { Maybe } from "../utils.ts";
+import { Command } from "@/commander";
+import { Maybe, timeMs } from "../utils.ts";
+import { EtuStorage } from "../storage.ts";
 
 interface ENewOpts {
     id: string;
 }
 
-const action = (name: string, rate: number, initialHours: Maybe<number>, { id }: ENewOpts) => {
-    console.log({ name, rate, initialHours, id });
+const action = async (name: string, rate: number, initialHours: Maybe<number>, { id }: ENewOpts) => {
+    if (id) {
+        const project = await EtuStorage.getProjectById(id);
+        if (project.isSome()) throw new Error(`Project with id ${id} already exists.`);
+    }
+
+    await EtuStorage.setProject({ name, rate, slug: id });
+
+    if (initialHours) {
+        const currentTime = new Date().valueOf();
+        await EtuStorage.setSession(id, {
+            name: "Initial hours",
+            start: currentTime - timeMs({ h: initialHours }),
+            end: currentTime
+        });
+    }
+
+    await EtuStorage.setDefaultProject(id);
 }
 
 export const create = (cmd: Command) => {
