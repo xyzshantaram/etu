@@ -3,8 +3,7 @@ import { EtuStorage } from "../storage.ts";
 import { match } from "@/oxide";
 
 const action = async (id: string) => {
-    const result = await EtuStorage.setDefaultProject(id);
-    match(result, {
+    match(await EtuStorage.setDefaultProject(id), {
         Ok: _ => { },
         Err: msg => { throw new Error(msg) }
     });
