@@ -93,3 +93,15 @@ export async function getConfigValue(key: string) {
 export async function setConfigValue(key: string, value: string) {
     await kv.set(["config", key], value);
 }
+
+export async function deleteProject(id: string) {
+    const keys: Deno.KvKey[] = [];
+    for await (const item of kv.list({ prefix: ['projects', id] })) {
+        keys.push(item.key);
+    }
+    if (await getDefaultProject().then(v => v.unwrapOr(''))) {
+        keys.push(['config', 'default-project']);
+    }
+
+    await Promise.all(keys.map(key => kv.delete(key)));
+}

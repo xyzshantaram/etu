@@ -6,6 +6,8 @@ interface ENewOpts {
     id: string;
 }
 
+const currency = await storage.getConfigValue("currency");
+
 const action = async (
     name: string,
     rate: number,
@@ -30,8 +32,7 @@ const action = async (
     }
 
     console.log(
-        `Created project "${name}" with id ${slug}. Rate is ${storage.getConfigValue("currency")}${rate}/hr. ${
-            initialHours ? "Initial hours: " + initialHours + "." : ""
+        `Created project "${name}" with id ${slug}. Rate is ${currency}${rate}/hr. ${initialHours ? "Initial hours: " + initialHours + "." : ""
         }`,
     );
     await storage.setDefaultProject(slug);

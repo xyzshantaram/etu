@@ -1,6 +1,8 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 
+const currency = await storage.getConfigValue('currency');
+
 const action = async () => {
     let count = 0;
     for await (const project of storage.getProjects()) {
@@ -8,7 +10,7 @@ const action = async () => {
         console.log(header);
         console.log(`ID: ${project.slug}`);
         console.log(
-            `Rate: ${storage.getConfigValue("currency")}${project.rate}/hr`,
+            `Rate: ${currency}${project.rate}/hr`,
         );
         console.log("*".repeat(header.length));
         count += 1;

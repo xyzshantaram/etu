@@ -10,8 +10,8 @@ A fully-featured CLI time-clock for freelancers.
 - [ ] etu session edit
 - [x] etu project new
 - [x] etu project default
-- [ ] etu project edit
-- [ ] etu project delete
+- [x] etu project edit
+- [x] etu project delete
 - [x] etu project list
 - [x] etu config [key] [value]
 - [x] etu log
