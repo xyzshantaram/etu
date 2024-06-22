@@ -6,5 +6,11 @@
   },
   "tasks": {
     "run": "deno run --unstable-kv --allow-env=\"XDG_DATA_HOME,HOME\" --allow-read --allow-write src/etu.ts"
+  },
+  "fmt": {
+    "indentWidth": 4,
+    "include": ["src/"],
+    "exclude": ["src/testdata/", "src/fixtures/**/*.ts"],
+    "lineWidth": 120
   }
 }

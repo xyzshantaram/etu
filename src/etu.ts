@@ -1,4 +1,4 @@
-import { Command } from '@/commander';
+import { Command } from "@/commander";
 
 import { config, setupDefaults } from "./commands/config/mod.ts";
 import { log } from "./commands/log/mod.ts";
@@ -9,15 +9,15 @@ const createEtu = () => {
     const etu = new Command();
 
     etu
-        .name('etu')
-        .description('A simple time-tracker application.')
-        .version('0.0.1')
+        .name("etu")
+        .description("A simple time-tracker application.")
+        .version("0.0.1")
         .showHelpAfterError();
 
-    [config, log, session, project].forEach(cmd => etu.addCommand(cmd));
+    [config, log, session, project].forEach((cmd) => etu.addCommand(cmd));
 
     return etu;
-}
+};
 
 if (import.meta.main) {
     const etu = createEtu();

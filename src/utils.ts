@@ -18,14 +18,14 @@ export interface Session {
 
 export const slugify = (str: string) => {
     return String(str)
-        .normalize('NFKD') // split accented characters into their base characters and diacritical marks
-        .replace(/[\u0300-\u036f]/g, '') // remove all the accents, which happen to be all in the \u03xx UNICODE block.
+        .normalize("NFKD") // split accented characters into their base characters and diacritical marks
+        .replace(/[\u0300-\u036f]/g, "") // remove all the accents, which happen to be all in the \u03xx UNICODE block.
         .trim() // trim leading or trailing whitespace
         .toLowerCase() // convert to lowercase
-        .replace(/[^a-z0-9 -]/g, '') // remove non-alphanumeric characters
-        .replace(/\s+/g, '-') // replace spaces with hyphens
-        .replace(/-+/g, '-'); // remove consecutive hyphens
-}
+        .replace(/[^a-z0-9 -]/g, "") // remove non-alphanumeric characters
+        .replace(/\s+/g, "-") // replace spaces with hyphens
+        .replace(/-+/g, "-"); // remove consecutive hyphens
+};
 
 /**
  * Retrieves the project ID based on the provided ID or the default project ID if no ID is specified.
@@ -43,17 +43,23 @@ export const slugify = (str: string) => {
  * }
  * ```
  */
-export const getProjectId = async (id: Maybe<string>): Promise<Result<string, string>> => {
+export const getProjectId = async (
+    id: Maybe<string>,
+): Promise<Result<string, string>> => {
     if (!id) {
         const defaultId = await storage.getDefaultProject();
-        return defaultId.okOr("No project specified and no default project set.");
+        return defaultId.okOr(
+            "No project specified and no default project set.",
+        );
     }
 
     const specified = await storage.getProjectById(id);
-    return specified.map(v => v.slug).okOr("Specified project does not exist.");
-}
+    return specified.map((v) => v.slug).okOr(
+        "Specified project does not exist.",
+    );
+};
 
-type TimeUnit = 'y' | 'mo' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms';
+type TimeUnit = "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms";
 
 const msIn: Record<TimeUnit, number> = {
     ms: 1,
@@ -64,7 +70,7 @@ const msIn: Record<TimeUnit, number> = {
     w: 604_800_000,
     mo: 2_592_000_000,
     y: 31_536_000_000,
-}
+};
 
 const prettyUnits: Record<TimeUnit, string> = {
     y: "year",
@@ -74,15 +80,15 @@ const prettyUnits: Record<TimeUnit, string> = {
     h: "hour",
     m: "minute",
     s: "second",
-    ms: "millisecond"
-}
+    ms: "millisecond",
+};
 
 export const timeMs = (opts: Partial<Record<TimeUnit, number>>) =>
     (Object.keys(opts) as TimeUnit[])
         .map((u) => msIn[u] * (opts[u] || 0))
         .reduce((sum, i) => sum + i, 0);
 
-const descTime: TimeUnit[] = ['y', 'mo', 'w', 'd', 'h', 'm', 's'];
+const descTime: TimeUnit[] = ["y", "mo", "w", "d", "h", "m", "s"];
 
 export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
     const result: Partial<Record<TimeUnit, number>> = {};
@@ -101,25 +107,26 @@ export const humanReadable = (ms: number) => {
     const times = msToTime(ms);
     const units = Object.keys(times);
 
-    const keys = descTime.filter(k => units.includes(k));
+    const keys = descTime.filter((k) => units.includes(k));
     const result: string[] = [];
 
     keys.forEach((unit, i) => {
         if (unit in times) {
-            result.push(`${times[unit]} ${prettyUnits[unit]}${times[unit] !== 1 ? 's' : ''}`);
-            let suffix = ', ';
+            result.push(
+                `${times[unit]} ${prettyUnits[unit]}${times[unit] !== 1 ? "s" : ""}`,
+            );
+            let suffix = ", ";
             if (i == keys.length - 2) {
-                suffix = ' and ';
-            }
-            else if (i === keys.length - 1) {
-                suffix = ''
+                suffix = " and ";
+            } else if (i === keys.length - 1) {
+                suffix = "";
             }
             result.push(suffix);
         }
-    })
+    });
 
-    return result.join('');
-}
+    return result.join("");
+};
 
 export const sessionName = (name: Maybe<string>) => name || "(untitled)";
 
@@ -127,7 +134,7 @@ export const die = (code: number, args: any[]) => {
     if (code === 0) console.log(...args);
     else console.error("ERROR:", ...args);
     return Deno.exit(code);
-}
+};
 
 export const scream = (...args: any[]) => die(1, args);
 export const exit = (...args: any[]) => die(0, args);

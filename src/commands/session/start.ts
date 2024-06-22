@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Maybe, getProjectId, scream } from "../../utils.ts";
+import { getProjectId, Maybe, scream } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
 
@@ -15,13 +15,20 @@ const action = async (name: Maybe<string>, { id }: EStartOpts) => {
             await storage.putSession(id, { name, start: currentTime });
             const project = await storage.getProjectById(id);
 
-            console.log(`Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()}`);
-        }
+            console.log(
+                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
+                    new Date(currentTime).toLocaleString()
+                }`,
+            );
+        },
     });
-}
+};
 
-export const start = new Command('start')
-    .option('-i --id <string>', 'id of the project to start. Uses the default if not specified.')
-    .argument('[session-name]', 'Optional name for the session.')
-    .description('Start the clock.')
+export const start = new Command("start")
+    .option(
+        "-i --id <string>",
+        "id of the project to start. Uses the default if not specified.",
+    )
+    .argument("[session-name]", "Optional name for the session.")
+    .description("Start the clock.")
     .action(action);

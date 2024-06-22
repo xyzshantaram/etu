@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { Session, getProjectId, humanReadable, scream, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
@@ -31,26 +31,39 @@ const action = async ({ short, id }: ESummaryOpts) => {
             }
 
             if (ongoingTime) {
-                console.log(`Current session: ${sessionName(sessions.at(-1)?.name)}`);
-                console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
+                console.log(
+                    `Current session: ${sessionName(sessions.at(-1)?.name)}`,
+                );
+                console.log(
+                    `Time spent in current session: ${humanReadable(ongoingTime)}\n`,
+                );
             }
 
-            console.log(`Total time spent: ${humanReadable(ongoingTime + time)}`);
+            console.log(
+                `Total time spent: ${humanReadable(ongoingTime + time)}`,
+            );
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
-            const currency = await storage.getConfigValue('currency');
-            console.log(`${timeHours.toFixed(2)} hours: ${currency}${(timeHours * project.rate).toFixed(2)}`);
+            const currency = await storage.getConfigValue("currency");
+            console.log(
+                `${timeHours.toFixed(2)} hours: ${currency}${(timeHours * project.rate).toFixed(2)}`,
+            );
 
             if (!short) {
                 printLog(sessions);
             }
-        }
+        },
     });
-}
+};
 
-export const log = new Command('log')
-    .option('-i --id <string>', 'id of the project to summarize. Uses the default if not specified.')
-    .option('--short', "Don't print the log of hours worked.")
-    .description('Print the summary (hours worked, total billing) of the project.')
+export const log = new Command("log")
+    .option(
+        "-i --id <string>",
+        "id of the project to summarize. Uses the default if not specified.",
+    )
+    .option("--short", "Don't print the log of hours worked.")
+    .description(
+        "Print the summary (hours worked, total billing) of the project.",
+    )
     .action(action);
 
 function printLog(sessions: Session[]) {
