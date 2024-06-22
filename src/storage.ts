@@ -17,6 +17,12 @@ export async function* getSessions(id: string) {
     }
 }
 
+export async function* getProjects() {
+    for await (const project of kv.list<Project>({ prefix: ['projects'] })) {
+        if (project.key.length === 2) yield project.value;
+    }
+}
+
 export async function getDefaultProject(): Promise<Option<string>> {
     const project = await kv.get<string>(['config', 'default-project']);
     return Option(project.value);
