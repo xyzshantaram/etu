@@ -15,6 +15,11 @@ await Deno.mkdir(dataPath, { recursive: true });
 const kv = await Deno.openKv(join(dataPath, 'etu.db'));
 
 export class EtuStorage {
+    static async *getSessions(id: string) {
+        for await (const session of kv.list<Session>({ prefix: ['projects', id, 'sessions'] })) {
+            yield session.value;
+        }
+    }
     static async getDefaultProject(): Promise<Option<string>> {
         const project = await kv.get<string>(['projects', 'default']);
         return Option(project.value);
@@ -26,12 +31,12 @@ export class EtuStorage {
         return None;
     }
 
-    static async setProject(project: Project) {
+    static async putProject(project: Project) {
         await kv.set(['projects', project.slug], project);
     }
 
     static async putSession(id: string, sess: Session) {
-        await kv.set(['projects', id, 'sessions', ulid()], { end: -1, ...sess });
+        await kv.set(['projects', id, 'sessions', ulid()], sess);
     }
 
     static async endSession(id: string, end: number) {
