@@ -123,8 +123,9 @@ export const humanReadable = (ms: number) => {
 
 export const sessionName = (name: Maybe<string>) => name || "(untitled)";
 
-export const die = (code: number, ...args: any[]) => {
-    console.log(...args);
+export const die = (code: number, args: any[]) => {
+    if (code === 0) console.log(...args);
+    else console.error("ERROR:", ...args);
     return Deno.exit(code);
 }
 
