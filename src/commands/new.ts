@@ -24,7 +24,7 @@ const action = async (name: string, rate: number, initialHours: Maybe<number>, {
         });
     }
 
-    await EtuStorage.setDefaultProject(id);
+    await EtuStorage.setDefaultProject(slug);
 }
 
 export const create = (cmd: Command) => {
