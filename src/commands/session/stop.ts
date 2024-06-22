@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import { match } from "@/oxide";
-import * as storage from "../storage.ts";
-import { getProjectId } from "../utils.ts";
+import * as storage from "../../storage.ts";
+import { getProjectId } from "../../utils.ts";
 
 interface EStopOpts {
     id: string;
@@ -18,9 +18,7 @@ const action = async ({ id }: EStopOpts) => {
     });
 }
 
-export const stopClock = (cmd: Command) => {
-    return cmd.command('stop')
-        .option('-i --id <string>', 'id of the project to stop. Uses the default if not specified.')
-        .description('Stop the clock.')
-        .action(action);
-}
+export const stop = new Command('stop')
+    .option('-i --id <string>', 'id of the project to stop. Uses the default if not specified.')
+    .description('Stop the clock.')
+    .action(action);
