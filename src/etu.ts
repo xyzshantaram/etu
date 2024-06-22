@@ -1,9 +1,9 @@
 import { Command } from '@/commander';
-import { create } from "./commands/new.ts";
-import { startClock } from "./commands/start.ts";
-import { stopClock } from "./commands/stop.ts";
-import { summary } from "./commands/summary.ts";
-import { setDefault } from "./commands/default.ts";
+
+import { config } from "./commands/config/mod.ts";
+import { log } from "./commands/log/mod.ts";
+import { session } from "./commands/session/mod.ts";
+import { project } from "./commands/project/mod.ts";
 
 const createEtu = () => {
     const etu = new Command();
@@ -14,8 +14,7 @@ const createEtu = () => {
         .version('0.0.1')
         .showHelpAfterError();
 
-    [create, startClock, stopClock, summary, setDefault]
-        .forEach(setup => setup(etu));
+    [config, log, session, project].forEach(cmd => etu.addCommand(cmd));
 
     return etu;
 }
