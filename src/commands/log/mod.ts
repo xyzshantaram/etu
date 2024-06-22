@@ -40,15 +40,17 @@ const action = async ({ short, project }: ESummaryOpts) => {
                 );
             }
 
-            console.log(`Total time spent: ${heading(humanReadable(ongoingTime + time))}\n`);
-            const timeHours = (ongoingTime + time) / timeMs({ h: 1 }) - advance;
-            const currency = await storage.getConfigValue("currency");
-            const amt = heading(`${currency}${(timeHours * project.rate).toFixed(2)}`);
-            console.log(`${timeHours.toFixed(2)} hours * ${currency}${project.rate}/hr = ${amt}`);
-
             if (!short) {
                 printLog(sessions.map((entry) => entry.value));
             }
+
+            const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
+            console.log(`Total time spent: ${heading(humanReadable(ongoingTime + time))} = ${timeHours.toFixed(2)} h\n`);
+            console.log(`Hours paid in advance: ${advance}`);
+            const currency = await storage.getConfigValue("currency");
+            const hoursExpr = `(${timeHours.toFixed(2)} - ${advance})`;
+            const amt = heading(`${currency}${((timeHours - advance) * project.rate).toFixed(2)}`);
+            console.log(`Final amount: ${hoursExpr} h * ${currency}${project.rate}/hr = ${amt}`);
         },
     });
 };
@@ -58,7 +60,7 @@ export const log = new Command("log")
         "-p --project <string>",
         "id of the project to summarize. Uses the default if not specified.",
     )
-    .option("-s --short", "Don't print the log of hours worked.")
+    .option("-s --short", "Don't print the/ log of hours worked.")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
@@ -72,4 +74,5 @@ function printLog(sessions: Session[]) {
         console.log(`  start: ${new Date(session.start).toLocaleString()}`);
         console.log(`  end: ${new Date(session.end).toLocaleString()}`);
     }
+    console.log('');
 }
