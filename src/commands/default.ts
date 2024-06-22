@@ -1,7 +1,13 @@
-import { Command } from "@commander";
+import { Command } from "@/commander";
+import { EtuStorage } from "../storage.ts";
+import { match } from "@/oxide";
 
-const action = (id: string) => {
-
+const action = async (id: string) => {
+    const result = await EtuStorage.setDefaultProject(id);
+    match(result, {
+        Ok: _ => { },
+        Err: msg => { throw new Error(msg) }
+    });
 }
 
 export const setDefault = (cmd: Command) => {
