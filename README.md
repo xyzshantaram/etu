@@ -12,7 +12,7 @@ A fully-featured CLI time-clock for freelancers.
 - [x] etu project default
 - [ ] etu project edit
 - [ ] etu project delete
-- [ ] etu project list
+- [x] etu project list
 - [x] etu config [key] [value]
 - [x] etu log
 - [x] etu log --short
