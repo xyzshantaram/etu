@@ -1,11 +1,8 @@
 import { join } from "https://deno.land/std@0.204.0/path/join.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
 import { Project, Session } from "./utils.ts";
-import { None, Option, Result } from "@/oxide";
-import { Some } from "@/oxide";
+import { None, Option, Result, Some, Err, Ok } from "@/oxide";
 import { ulid } from "@/ulid";
-import { Err } from "@/oxide";
-import { Ok } from "@/oxide";
 
 const dataDir = dir('data');
 if (!dataDir) throw new Error("Couldn't find your data directory! Bailing.");
