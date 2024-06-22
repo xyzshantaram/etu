@@ -12,12 +12,15 @@ const action = async (name: Maybe<string>, { id }: EStartOpts) => {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const currentTime = Date.now();
+            const last = await storage.getLastSession(id);
+            if (last && !last.value.end) {
+                scream("A session is already running for the specified project.");
+            }
             await storage.putSession(id, { name, start: currentTime });
             const project = await storage.getProjectById(id);
 
             console.log(
-                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
-                    new Date(currentTime).toLocaleString()
+                `Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()
                 }`,
             );
         },
