@@ -5,7 +5,8 @@
       "npm:@commander-js/extra-typings": "npm:@commander-js/extra-typings@12.0.1_commander@12.0.0",
       "npm:@commander-js/extra-typings@12.0.0": "npm:@commander-js/extra-typings@12.0.0_commander@12.0.0",
       "npm:@types/yargs": "npm:@types/yargs@17.0.32",
-      "npm:commander@12.0.0": "npm:commander@12.0.0"
+      "npm:commander@12.0.0": "npm:commander@12.0.0",
+      "npm:oxide.ts@1.1.0": "npm:oxide.ts@1.1.0"
     },
     "npm": {
       "@commander-js/extra-typings@12.0.0_commander@12.0.0": {
@@ -32,6 +33,10 @@
       },
       "commander@12.0.0": {
         "integrity": "sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==",
+        "dependencies": {}
+      },
+      "oxide.ts@1.1.0": {
+        "integrity": "sha512-+MkqFRQVHEe/x4/cJ6KuYz2m2VpnoBi7aKLbttGYTxmpNZalQ2RbKH2HxyfsTqXJhjh9DYxulPWfQV/hWMmzCg==",
         "dependencies": {}
       }
     }
@@ -215,7 +220,8 @@
   "workspace": {
     "dependencies": [
       "npm:@commander-js/extra-typings@12.0.0",
-      "npm:commander@12.0.0"
+      "npm:commander@12.0.0",
+      "npm:oxide.ts@1.1.0"
     ]
   }
 }
