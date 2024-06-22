@@ -1,18 +1,20 @@
 import { Command } from "@/commander";
 import { start } from "./start.ts";
 import { stop } from "./stop.ts";
-import { Session } from "../../utils.ts";
 import * as storage from '../../storage.ts';
 import { deleteSession } from "./delete.ts";
+import { sessionName } from "../../utils.ts";
 
 
 export const getSessionChoices = async (id: string) => {
     const choices: string[] = [];
-    const map: Record<string, Session> = {};
+    const map: Record<string, string> = {};
     for await (const session of storage.getSessions(id)) {
-        const key = session.key[3].toString();
-        choices.push(key);
-        map[key] = session.value;
+        const s = session.value;
+        const fmt = (v: number) => new Date(v).toLocaleString();
+        const choice = `Session ${sessionName(s.name)} from ${fmt(s.start)}${s.end ? ' to ' + fmt(s.end) : ''}`;
+        choices.push(choice);
+        map[choice] = session.key[3].toString();
     }
     return { choices, map };
 }
