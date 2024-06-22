@@ -7,11 +7,13 @@ const currency = await storage.getConfigValue("currency");
 const action = async () => {
     let count = 0;
     for await (const project of storage.getProjects()) {
-        const header = `**** ${project.name} ****`;
-        console.log(heading(header));
-        console.log(info(`ID: ${project.slug}`));
-        console.log(info(`Rate: ${currency}${project.rate}/hr`));
-        console.log("*".repeat(header.length));
+        const header = `**** ${heading(project.name)} ****`;
+        const rate = info(`${currency}${project.rate}/hr`);
+        console.log(header);
+        console.log(`ID: ${info(project.slug)}`);
+        console.log(`Rate: ${rate}`);
+        console.log(`Advance: ${info(`${project.advance || 0} h`)}`);
+        console.log("*".repeat(project.name.length + 10));
         count += 1;
     }
 

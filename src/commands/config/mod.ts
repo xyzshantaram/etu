@@ -31,11 +31,11 @@ const action = async (key: Maybe<string>, value: Maybe<string>) => {
         return console.log(success(`Successfully set ${key} to ${value}`));
     } else if (key && !value) {
         const item = await storage.getConfigValue(key);
-        return console.log(info(`${key}: ${item}`));
+        return console.log(`${key}: ${info(item)}`);
     }
     for (const k of validKeys) {
         const v = await storage.getConfigValue(k);
-        console.log(info(`${k}: ${v === "" ? "<nothing>" : v}`));
+        console.log(`${k}: ${info(v === "" ? "<nothing>" : v)}`);
     }
 };
 
