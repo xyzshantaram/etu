@@ -3,18 +3,11 @@
   "packages": {
     "specifiers": {
       "npm:@commander-js/extra-typings": "npm:@commander-js/extra-typings@12.0.1_commander@12.0.0",
-      "npm:@commander-js/extra-typings@12.0.0": "npm:@commander-js/extra-typings@12.0.0_commander@12.0.0",
       "npm:@types/yargs": "npm:@types/yargs@17.0.32",
       "npm:commander@12.0.0": "npm:commander@12.0.0",
       "npm:oxide.ts@1.1.0": "npm:oxide.ts@1.1.0"
     },
     "npm": {
-      "@commander-js/extra-typings@12.0.0_commander@12.0.0": {
-        "integrity": "sha512-7zGCwtRKOJ978LCuEZbQ9ZmLdrRkNNASphEO5i9MZb6HfOk7KfsA3f4oXqYDhko4tNrU3GmZTlHqQ/nRlYtYSw==",
-        "dependencies": {
-          "commander": "commander@12.0.0"
-        }
-      },
       "@commander-js/extra-typings@12.0.1_commander@12.0.0": {
         "integrity": "sha512-OvkMobb1eMqOCuJdbuSin/KJkkZr7n24/UNV+Lcz/0Dhepf3r2p9PaGwpRpAWej7A+gQnny4h8mGhpFl4giKkg==",
         "dependencies": {
@@ -188,6 +181,7 @@
     "https://deno.land/x/dir@1.5.2/mod.ts": "95e1519b7b629c995025652342b36fbf64a6a9a0bd7822b0c4573a22f42f0529",
     "https://deno.land/x/dir@1.5.2/tmp_dir/mod.ts": "c89c792d454fa1e3b2882f34faa87e9b92fc2866118b348d9984d68d33773c58",
     "https://deno.land/x/escalade@v3.0.3/sync.ts": "493bc66563292c5c10c4a75a467a5933f24dad67d74b0f5a87e7b988fe97c104",
+    "https://deno.land/x/ulid@v0.3.0/mod.ts": "f7ff065b66abd485051fc68af23becef6ccc7e81f7774d7fcfd894a4b2da1984",
     "https://deno.land/x/y18n@v5.0.0-deno/build/lib/index.js": "92c4624714aa508d33c6d21c0b0ffa072369a8b306e5f8c7727662f570bbd026",
     "https://deno.land/x/y18n@v5.0.0-deno/deno.ts": "80997f0709a0b43d29931e2b33946f2bbc32b13fd82f80a5409628455427e28d",
     "https://deno.land/x/y18n@v5.0.0-deno/lib/platform-shims/deno.ts": "8fa2c96ac03734966260cfd2c5bc240e41725c913e5b64a0297aede09f52b39d",
@@ -219,7 +213,6 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@commander-js/extra-typings@12.0.0",
       "npm:commander@12.0.0",
       "npm:oxide.ts@1.1.0"
     ]
