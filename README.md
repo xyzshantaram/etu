@@ -8,10 +8,10 @@ See `etu help`.
 
 ## Installation
 
-Clone this repo, then run:
+You'll need [Deno](https://deno.land) installed. Then, clone this repo, then run:
 
 ```sh
-deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write src/etu.ts
+deno task build
 ```
 
 You should end up with a file called `etu` in the current directory.

@@ -7,7 +7,8 @@
     "@/cliffy/ansi": "https://deno.land/x/cliffy@v1.0.0-rc.4/ansi/mod.ts"
   },
   "tasks": {
-    "run": "deno run --unstable-kv --allow-env --allow-read --allow-write src/etu.ts"
+    "run": "deno run --unstable-kv --allow-env --allow-read --allow-write src/etu.ts",
+    "build": "deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write src/etu.ts"
   },
   "fmt": {
     "indentWidth": 4,
