@@ -5,11 +5,11 @@ import * as storage from "../../storage.ts";
 import { Confirm } from "@/cliffy/prompt";
 
 interface EDeleteOpts {
-    id: string;
+    project: string;
 }
 
-const action = async ({ id }: EDeleteOpts) => {
-    return await match(await getProjectId(id), {
+const action = async ({ project }: EDeleteOpts) => {
+    return await match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const project = (await storage.getProjectById(id)).unwrapOrElse(() =>

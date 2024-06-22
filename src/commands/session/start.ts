@@ -4,11 +4,11 @@ import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
 
 interface EStartOpts {
-    id: string;
+    project: string;
 }
 
-const action = async (name: Maybe<string>, { id }: EStartOpts) => {
-    return match(await getProjectId(id), {
+const action = async (name: Maybe<string>, { project }: EStartOpts) => {
+    return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const currentTime = Date.now();
@@ -20,8 +20,7 @@ const action = async (name: Maybe<string>, { id }: EStartOpts) => {
             const project = await storage.getProjectById(id);
 
             console.log(
-                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
-                    new Date(currentTime).toLocaleString()
+                `Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()
                 }`,
             );
         },
@@ -30,7 +29,7 @@ const action = async (name: Maybe<string>, { id }: EStartOpts) => {
 
 export const start = new Command("start")
     .option(
-        "-i --id <string>",
+        "-p --project <string>",
         "id of the project to start. Uses the default if not specified.",
     )
     .argument("[session-name]", "Optional name for the session.")

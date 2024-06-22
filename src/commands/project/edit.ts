@@ -5,12 +5,12 @@ import * as storage from "../../storage.ts";
 import { Input, Number, Select } from "@/cliffy/prompt";
 
 interface EEditOpts {
-    id: string;
+    project: string;
 }
 
 const currency = await storage.getConfigValue("currency");
-const action = async ({ id }: EEditOpts) => {
-    return await match(await getProjectId(id), {
+const action = async function ({ project }: EEditOpts) {
+    return await match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const project = (await storage.getProjectById(id)).unwrapOrElse(() =>

@@ -4,11 +4,11 @@ import * as storage from "../../storage.ts";
 import { getProjectId, scream } from "../../utils.ts";
 
 interface EStopOpts {
-    id: string;
+    project: string;
 }
 
-const action = async ({ id }: EStopOpts) => {
-    return await match(await getProjectId(id), {
+const action = async ({ project }: EStopOpts) => {
+    return await match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const session = await storage.getLastSession(id);
@@ -22,7 +22,7 @@ const action = async ({ id }: EStopOpts) => {
 
 export const stop = new Command("stop")
     .option(
-        "-i --id <string>",
+        "-p --project <string>",
         "id of the project to stop. Uses the default if not specified.",
     )
     .description("Stop the clock.")

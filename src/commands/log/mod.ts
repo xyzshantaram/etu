@@ -5,11 +5,11 @@ import { getProjectId, heading, humanReadable, scream, Session, sessionName, tim
 
 interface ESummaryOpts {
     short: boolean;
-    id: string;
+    project: string;
 }
 
-const action = async ({ short, id }: ESummaryOpts) => {
-    return match(await getProjectId(id), {
+const action = async ({ short, project }: ESummaryOpts) => {
+    return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
             const sessions = [];
@@ -54,7 +54,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
 
 export const log = new Command("log")
     .option(
-        "-i --id <string>",
+        "-p --project <string>",
         "id of the project to summarize. Uses the default if not specified.",
     )
     .option("-s --short", "Don't print the log of hours worked.")
