@@ -6,7 +6,6 @@ A fully-featured CLI time-clock for freelancers.
 
 - [x] etu session start
 - [x] etu session stop
-- [ ] etu session list
 - [ ] etu session delete
 - [ ] etu session edit
 - [x] etu project new
