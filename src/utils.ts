@@ -65,12 +65,23 @@ const msIn: Record<TimeUnit, number> = {
     y: 31_536_000_000,
 }
 
+const prettyUnits: Record<TimeUnit, string> = {
+    y: "year",
+    mo: "month",
+    w: "week",
+    d: "day",
+    h: "hour",
+    m: "minute",
+    s: "second",
+    ms: "millisecond"
+}
+
 export const timeMs = (opts: Partial<Record<TimeUnit, number>>) =>
     (Object.keys(opts) as TimeUnit[])
         .map((u) => msIn[u] * (opts[u] || 0))
         .reduce((sum, i) => sum + i, 0);
 
-const descTime: TimeUnit[] = ['y', 'mo', 'w', 'd', 'h', 'm', 's', 'ms'];
+const descTime: TimeUnit[] = ['y', 'mo', 'w', 'd', 'h', 'm', 's'];
 
 export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
     const result: Partial<Record<TimeUnit, number>> = {};
@@ -86,8 +97,27 @@ export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
 };
 
 export const humanReadable = (ms: number) => {
-    console.warn("TODO: implement");
-    return JSON.stringify(msToTime(ms));
+    const times = msToTime(ms);
+    const units = Object.keys(times);
+
+    const keys = descTime.filter(k => units.includes(k));
+    const result: string[] = [];
+
+    keys.forEach((unit, i) => {
+        if (unit in times) {
+            result.push(`${times[unit]} ${prettyUnits[unit]}${times[unit] !== 1 ? 's' : ''}`);
+            let suffix = ', ';
+            if (i == keys.length - 2) {
+                suffix = ' and ';
+            }
+            else if (i === keys.length - 1) {
+                suffix = ''
+            }
+            result.push(suffix);
+        }
+    })
+
+    return result.join('');
 }
 
 export const sessionName = (name: Maybe<string>) => name || "(untitled)";
