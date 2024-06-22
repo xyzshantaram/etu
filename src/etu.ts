@@ -1,5 +1,4 @@
-import "@commander/extra-typings";
-import { Command } from '@commander';
+import { Command } from '@/commander';
 import { create } from "./commands/new.ts";
 import { startClock } from "./commands/start.ts";
 import { stopClock } from "./commands/stop.ts";

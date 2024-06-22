@@ -1,7 +1,6 @@
 {
   "imports": {
     "@/commander": "npm:commander@12.0.0",
-    "@/commander/extra-typings": "npm:@commander-js/extra-typings@12.0.0",
     "@/oxide": "npm:oxide.ts@1.1.0",
     "@/ulid": "https://deno.land/x/ulid@v0.3.0/mod.ts"
   },
