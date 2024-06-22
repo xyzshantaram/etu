@@ -47,7 +47,7 @@ const action = async ({ short, id }: ESummaryOpts) => {
     });
 }
 
-export const summary = new Command('log')
+export const log = new Command('log')
     .option('-i --id <string>', 'id of the project to summarize. Uses the default if not specified.')
     .option('--short', "Don't print the log of hours worked.")
     .description('Print the summary (hours worked, total billing) of the project.')
