@@ -39,12 +39,25 @@ export class EtuStorage {
         await kv.set(['projects', id, 'sessions', ulid()], sess);
     }
 
-    static async endSession(id: string, end: number) {
+    static async getLastSession(id: string) {
         return await kv
             .list<Session>({ prefix: ['projects', id, 'sessions'] }, { limit: 1, reverse: true })
             .next()
-            .then(itm => itm.value)
-            .then(async item => item && await kv.set(item.key, { ...item.value, end }));
+            .then(itm => itm.value);
+    }
+
+    static async endSession(identifier: Deno.KvEntry<Session>, end: number): Promise<void>;
+    static async endSession(identifier: string, end: number): Promise<void>;
+    static async endSession(identifier: unknown, end: number) {
+        if (typeof identifier === 'string') {
+            await this.getLastSession(identifier)
+                .then(async item => item && await kv.set(item.key, { ...item.value, end }));
+        }
+        else {
+            const entry = identifier as Deno.KvEntry<Session>;
+            await kv.set(entry.key, { ...entry.value, end });
+        }
+
     }
 
     static async setDefaultProject(id: string): Promise<Result<null, string>> {
