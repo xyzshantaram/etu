@@ -94,15 +94,22 @@ export async function setConfigValue(key: string, value: string) {
     await kv.set(["config", key], value);
 }
 
-export async function deleteProject(id: string) {
+export async function deleteProject(id: string, silent = false) {
     const keys: Deno.KvKey[] = [];
-    for await (const item of kv.list({ prefix: ["projects", id] })) {
-        keys.push(item.key);
+    for await (const item of kv.list({ prefix: ["projects"] })) {
+        if (item.key[1] === id) keys.push(item.key);
     }
-    if (await getDefaultProject().then((v) => v.unwrapOr(""))) {
+
+    if (await getDefaultProject().then((v) => v.unwrapOr("") === id)) {
         keys.push(["config", "default-project"]);
     }
 
+    if (keys.length === 0) {
+        if (!silent) console.log(`No items associated with project ${id} found. Are you sure you got the name right?`);
+        return;
+    }
+
+    if (!silent) console.log('Deleted successfully');
     await Promise.all(keys.map((key) => kv.delete(key)));
 }
 
