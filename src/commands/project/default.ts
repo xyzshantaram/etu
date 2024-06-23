@@ -5,7 +5,9 @@ import { scream } from "../../utils.ts";
 
 const action = async (id: string) => {
     match(await storage.setDefaultProject(id), {
-        Ok: (_) => {},
+        Ok: (_) => {
+            console.log(`Successfully set default project to \`${id}\`.`);
+        },
         Err: (msg) => scream(msg),
     });
 };
