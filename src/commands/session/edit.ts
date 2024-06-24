@@ -32,9 +32,9 @@ const action = async ({ project }: EEditSessionOpts) => {
                 });
 
                 const acceptTime = async () => {
-                    const s = await Input.prompt({
+                    let s = await Input.prompt({
                         message: "What should I set the time to? (yyyy-mm-dd hh:mm:ss)",
-                        validate: (s) => /\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/.test(s),
+                        validate: (s) => !isNaN(new Date(s).valueOf()),
                     });
 
                     return new Date(s).valueOf();
@@ -44,16 +44,19 @@ const action = async ({ project }: EEditSessionOpts) => {
                     case "change start time": {
                         const start = await acceptTime();
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, start });
+                        console.log("Changed successfully.");
                         break;
                     }
                     case "change end time": {
                         const end = await acceptTime();
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, end });
+                        console.log("Changed successfully.");
                         break;
                     }
                     case "rename": {
                         const name = await Input.prompt("What should the new name be?");
                         await storage.editSession(id, toEdit, { ...map[toEdit].obj, name });
+                        console.log("Changed successfully.");
                         break;
                     }
                     default:
