@@ -32,8 +32,10 @@ const action = async ({ short, project }: ESummaryOpts) => {
             }
 
             if (ongoingTime) {
+                const session = sessions.at(-1);
                 console.log(
-                    `Current session: ${sessionName(sessions.at(-1)?.value.name)}`,
+                    `Current session: ${sessionName(session?.value.name)}`,
+                    `Started at: ${new Date(session?.value.start!).toLocaleString()}`
                 );
                 console.log(
                     `Time spent in current session: ${humanReadable(ongoingTime)}\n`,
@@ -67,7 +69,7 @@ export const log = new Command("log")
     .action(action);
 
 function printLog(sessions: Session[]) {
-    console.log(heading("\nSession log:"));
+    console.log(heading("Session log:"));
     for (const session of sessions) {
         if (!session.end) continue;
         console.log(`**** ${heading(sessionName(session.name))} ****`);
