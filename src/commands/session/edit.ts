@@ -20,8 +20,12 @@ const action = async ({ project }: EEditSessionOpts) => {
                 options: choices,
             });
 
+            console.log("Current values:");
+            console.log(map[toEdit].obj);
+
             let inp = "";
             while (inp != "exit") {
+
                 inp = await Select.prompt({
                     message: "What would you like to do?",
                     options: ["change start time", "change end time", "rename", "exit"],
