@@ -25,7 +25,7 @@ const action = async ({ short, project }: ESummaryOpts) => {
                 else time += session.value.end - session.value.start;
             }
 
-            console.log(`Viewing project ${heading(project.name)}`);
+            console.log(`Project ${heading(project.name)}\n`);
 
             if (sessions.length === 0) {
                 scream("No sessions exist for the specified project");
@@ -46,13 +46,20 @@ const action = async ({ short, project }: ESummaryOpts) => {
                 printLog(sessions.map((entry) => entry.value));
             }
 
+            const curr = await storage.getConfigValue("currency");
+            const money = (amt: string | number) => `${curr}${amt}`;
+
             const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
-            console.log(`Total time spent: ${heading(humanReadable(ongoingTime + time))} = ${timeHours.toFixed(2)} h\n`);
-            console.log(`Hours paid in advance: ${advance}`);
-            const currency = await storage.getConfigValue("currency");
-            const hoursExpr = `(${timeHours.toFixed(2)} - ${advance})`;
-            const amt = heading(`${currency}${((timeHours - advance) * project.rate).toFixed(2)}`);
-            console.log(`Final amount: ${hoursExpr} h * ${currency}${project.rate}/hr = ${amt}`);
+            const totalTime = heading(humanReadable(ongoingTime + time));
+            const decHours = timeHours.toFixed(2);
+            const gross = timeHours * project.rate;
+            const hoursExpr = `(${decHours} h - ${advance} h)`;
+
+            console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
+            console.log(`Gross amount (${decHours} * ${money(project.rate)}/hr): ${money(gross.toFixed(2))}`);
+            console.log(`Hours paid in advance: ${advance} h`);
+            const amt = heading(money(((timeHours - advance) * project.rate).toFixed(2)));
+            console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/hr = ${amt}`);
         },
     });
 };
@@ -69,12 +76,16 @@ export const log = new Command("log")
     .action(action);
 
 function printLog(sessions: Session[]) {
-    console.log(heading("Session log:"));
+    console.log(heading("Sessions"));
+
+    const length = sessions.length.toString().length;
+    let count = 0;
+    const idx = () => (++count).toString().padStart(length, '0');
     for (const session of sessions) {
         if (!session.end) continue;
-        console.log(`**** ${heading(sessionName(session.name))} ****`);
-        console.log(`  start: ${new Date(session.start).toLocaleString()}`);
-        console.log(`  end: ${new Date(session.end).toLocaleString()}`);
+        console.log(`  ${idx()}. ${heading(sessionName(session.name))}`);
+        console.log(`    start: ${new Date(session.start).toLocaleString()}`);
+        console.log(`    end: ${new Date(session.end).toLocaleString()}`);
     }
     console.log('');
 }
