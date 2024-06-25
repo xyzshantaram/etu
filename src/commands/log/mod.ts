@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, msToTime, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
