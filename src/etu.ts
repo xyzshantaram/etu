@@ -5,7 +5,7 @@ import { log } from "./commands/log/mod.ts";
 import { session } from "./commands/session/mod.ts";
 import { project } from "./commands/project/mod.ts";
 
-const createEtu = () => {
+export const createEtu = () => {
     const etu = new Command();
 
     etu
