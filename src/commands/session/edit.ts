@@ -28,7 +28,7 @@ const action = async ({ project }: EEditSessionOpts) => {
 
                 inp = await Select.prompt({
                     message: "What would you like to do?",
-                    options: ["change start time", "change end time", "rename", "exit"],
+                    options: ["change start time", "change end time", "remove end time", "rename", "exit"],
                 });
 
                 const acceptTime = async () => {
@@ -59,6 +59,10 @@ const action = async ({ project }: EEditSessionOpts) => {
                         console.log("Changed successfully.");
                         break;
                     }
+                    case "remove end time":
+                        await storage.editSession(id, toEdit, { ...map[toEdit].obj, end: undefined });
+                        console.log("Removed successfully.");
+                        break;
                     default:
                         break;
                 }
