@@ -57,12 +57,12 @@ const action = async ({ short, project }: ESummaryOpts) => {
             const hoursExpr = `(${decHours} h - ${advance} h)`;
 
             console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
-            console.log(`Gross amount (${decHours} * ${money(project.rate)}/hr): ${money(gross.toFixed(2))}`);
+            console.log(`Gross amount (${decHours} h * ${money(project.rate)}/h): ${money(gross.toFixed(2))}`);
             console.log(`Hours paid in advance: ${advance} h`);
             const advanceRemaining = timeMs({ h: advance }) - (elapsed);
             if (advanceRemaining > 0) console.log('Advance remaining:', humanReadable(advanceRemaining));
             const amt = heading(money(((timeHours - advance) * project.rate).toFixed(2)));
-            console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/hr = ${amt}`);
+            console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/h = ${amt}`);
         },
     });
 };
