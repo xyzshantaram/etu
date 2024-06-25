@@ -1,7 +1,7 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, msToTime, scream, Session, sessionName, timeMs } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
@@ -49,8 +49,9 @@ const action = async ({ short, project }: ESummaryOpts) => {
             const curr = await storage.getConfigValue("currency");
             const money = (amt: string | number) => `${curr}${amt}`;
 
-            const timeHours = (ongoingTime + time) / timeMs({ h: 1 });
-            const totalTime = heading(humanReadable(ongoingTime + time));
+            const elapsed = ongoingTime + time;
+            const timeHours = (elapsed) / timeMs({ h: 1 });
+            const totalTime = heading(humanReadable(elapsed));
             const decHours = timeHours.toFixed(2);
             const gross = timeHours * project.rate;
             const hoursExpr = `(${decHours} h - ${advance} h)`;
@@ -58,6 +59,8 @@ const action = async ({ short, project }: ESummaryOpts) => {
             console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
             console.log(`Gross amount (${decHours} * ${money(project.rate)}/hr): ${money(gross.toFixed(2))}`);
             console.log(`Hours paid in advance: ${advance} h`);
+            const advanceRemaining = timeMs({ h: advance }) - (elapsed);
+            if (advanceRemaining > 0) console.log('Advance remaining:', humanReadable(advanceRemaining));
             const amt = heading(money(((timeHours - advance) * project.rate).toFixed(2)));
             console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/hr = ${amt}`);
         },
