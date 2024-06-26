@@ -33,13 +33,9 @@ const action = async ({ short, project }: ESummaryOpts) => {
 
             if (ongoingTime) {
                 const session = sessions.at(-1);
-                console.log(
-                    `Current session: ${sessionName(session?.value.name)}`,
-                    `Started at: ${new Date(session?.value.start!).toLocaleString()}`
-                );
-                console.log(
-                    `Time spent in current session: ${humanReadable(ongoingTime)}\n`,
-                );
+                console.log(`Current session: ${sessionName(session?.value.name)}`);
+                console.log(`Started at: ${new Date(session?.value.start!).toLocaleString()}`);
+                console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
             }
 
             if (!short) {
@@ -86,7 +82,7 @@ function printLog(sessions: Session[]) {
     const idx = () => (++count).toString().padStart(length, '0');
     for (const session of sessions) {
         if (!session.end) continue;
-        console.log(`  ${idx()}. ${heading(sessionName(session.name))}`);
+        console.log(`  ${idx()}. ${heading(sessionName(session.name, false))}`);
         console.log(`    start: ${new Date(session.start).toLocaleString()}`);
         console.log(`    end: ${new Date(session.end).toLocaleString()}`);
     }

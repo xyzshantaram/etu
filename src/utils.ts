@@ -114,7 +114,10 @@ export const humanReadable = (ms: number) => {
     return result.join("");
 };
 
-export const sessionName = (name: Maybe<string>) => name || "(untitled)";
+export const sessionName = (name: Maybe<string>, quoted = true) => {
+    const s = name || "(untitled)";
+    return quoted ? `\`${s}\`` : s;
+}
 
 export const die = (code: number, msg: string) => {
     if (code === 0) console.log(msg);
