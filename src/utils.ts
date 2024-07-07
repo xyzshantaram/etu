@@ -74,7 +74,7 @@ export const timeMs = (opts: Partial<Record<TimeUnit, number>>) =>
         .map((u) => msIn[u] * (opts[u] || 0))
         .reduce((sum, i) => sum + i, 0);
 
-const descTime: TimeUnit[] = ["y", "mo", "w", "d", "h", "m", "s"];
+export const descTime: TimeUnit[] = ["y", "mo", "w", "d", "h", "m", "s"];
 
 export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
     const result: Partial<Record<TimeUnit, number>> = {};
