@@ -32,13 +32,6 @@ const action = async ({ short, project }: ESummaryOpts) => {
                 scream("No sessions exist for the specified project");
             }
 
-            if (ongoingTime) {
-                const session = sessions.at(-1);
-                console.log(`Current session: ${sessionName(session?.value.name)}`);
-                console.log(`Started at: ${new Date(session?.value.start!).toLocaleString()}`);
-                console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
-            }
-
             if (!short) {
                 printLog(sessions.map((entry) => entry.value));
             }
@@ -52,6 +45,14 @@ const action = async ({ short, project }: ESummaryOpts) => {
             const decHours = timeHours.toFixed(2);
             const gross = timeHours * project.rate;
             const hoursExpr = `(${decHours} h - ${advance} h)`;
+
+
+            if (ongoingTime) {
+                const session = sessions.at(-1);
+                console.log(`Current session: ${sessionName(session?.value.name, false)}`);
+                console.log(`Started at: ${new Date(session?.value.start!).toLocaleString()}`);
+                console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
+            }
 
             console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
             console.log(`Gross amount (${decHours} h * ${money(project.rate)}/h): ${money(gross.toFixed(2))}`);
