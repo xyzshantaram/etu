@@ -133,6 +133,10 @@ const error = colors.bold.red;
 export const scream = (...args: any[]) => die(1, error(["ERROR:", ...args].join(" ")));
 export const exit = (...args: any[]) => die(0, args.join(" "));
 
+export const SELECTED_DATE_FUTURE_ERROR = "Date cannot be in the future";
+export const SELECTED_DATE_END_BEFORE_START = "End date cannot be before start date";
+export const SELECTED_DATE_START_AFTER_END = "Start date cannot be after end date";
+
 export const success = colors.bold.green;
 export const heading = colors.bold;
 export const info = colors.bold.blue;
