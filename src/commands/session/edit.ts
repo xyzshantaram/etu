@@ -32,11 +32,8 @@ const action = async ({ project }: EEditSessionOpts) => {
                     options: ["change start time", "change end time", "remove end time", "rename", "exit"],
                 });
 
-                const log = (s: string) => Deno.writeTextFileSync('./tmp.txt', '\n' + s, { create: true, append: true })
-
                 const acceptTime = async (selecting: "start" | "end", start: number, end?: number) => {
                     const TIME_DELTA_REGEX = new RegExp("(now)?([+-])(\\d+)(" + descTime.join("|") + ")");
-                    log(TIME_DELTA_REGEX.toString());
                     let finalDate;
                     await Input.prompt({
                         message: "What should I set the time to? (yyyy-mm-dd hh:mm:ss | delta | now)",
@@ -49,15 +46,11 @@ const action = async ({ project }: EEditSessionOpts) => {
                             }
                             const matches = trimmed.match(TIME_DELTA_REGEX);
                             if (matches) {
-                                log(JSON.stringify(matches));
                                 const [, relativeToNow, direction, duration, unit] = matches;
                                 const sign = direction === "+" ? 1 : -1;
                                 const n = parseInt(duration);
                                 const ms = (relativeToNow ? now : (selecting === "start" ? start : (end || now))) +
                                     sign * timeMs({ [unit]: n });
-                                log(JSON.stringify({
-                                    ms, sign, direction, n, duration, unit, relativeToNow
-                                }))
 
                                 if (ms > now) return SELECTED_DATE_FUTURE_ERROR;
 
