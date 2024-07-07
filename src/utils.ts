@@ -89,12 +89,16 @@ export const msToTime = (ms: number): Partial<Record<TimeUnit, number>> => {
     return result;
 };
 
-export const humanReadable = (ms: number) => {
+export const humanReadable = (ms: number, short = false) => {
     const times = msToTime(ms);
     const units = Object.keys(times);
 
     const keys = descTime.filter((k) => units.includes(k));
     const result: string[] = [];
+
+    if (short) {
+        return keys.map(key => times[key]?.toString().padStart(2, '0') + key).join('');
+    }
 
     keys.forEach((unit, i) => {
         if (unit in times) {
@@ -117,7 +121,7 @@ export const humanReadable = (ms: number) => {
 export const sessionName = (name: Maybe<string>, quoted = true) => {
     const s = name || "(untitled)";
     return quoted ? `\`${s}\`` : s;
-}
+};
 
 export const die = (code: number, msg: string) => {
     if (code === 0) console.log(msg);
@@ -132,3 +136,4 @@ export const exit = (...args: any[]) => die(0, args.join(" "));
 export const success = colors.bold.green;
 export const heading = colors.bold;
 export const info = colors.bold.blue;
+export const muted = colors.italic.gray;
