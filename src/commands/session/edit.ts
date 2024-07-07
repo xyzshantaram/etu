@@ -23,6 +23,9 @@ const action = async ({ project }: EEditSessionOpts) => {
             console.log("Current values:");
             console.log(map[toEdit].obj);
 
+
+            let changed = { ...map[toEdit].obj };
+
             let inp = "";
             while (inp != "exit") {
                 inp = await Select.prompt({
@@ -42,29 +45,31 @@ const action = async ({ project }: EEditSessionOpts) => {
                 switch (inp) {
                     case "change start time": {
                         const start = await acceptTime();
-                        await storage.editSession(id, toEdit, { ...map[toEdit].obj, start });
+                        changed = { ...changed, start };
                         console.log("Changed successfully.");
                         break;
                     }
                     case "change end time": {
                         const end = await acceptTime();
-                        await storage.editSession(id, toEdit, { ...map[toEdit].obj, end });
+                        changed = { ...changed, end };
                         console.log("Changed successfully.");
                         break;
                     }
                     case "rename": {
                         const name = await Input.prompt("What should the new name be?");
-                        await storage.editSession(id, toEdit, { ...map[toEdit].obj, name });
+                        changed = { ...changed, name };
                         console.log("Changed successfully.");
                         break;
                     }
                     case "remove end time":
-                        await storage.editSession(id, toEdit, { ...map[toEdit].obj, end: undefined });
+                        changed = { ...changed, end: undefined };
                         console.log("Removed successfully.");
                         break;
                     default:
                         break;
                 }
+
+                await storage.editSession(id, toEdit, changed);
             }
         },
     });
