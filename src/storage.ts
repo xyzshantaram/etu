@@ -109,7 +109,7 @@ export async function deleteProject(id: string, silent = false) {
         return;
     }
 
-    if (!silent) console.log('Deleted successfully.');
+    if (!silent) console.log("Deleted successfully.");
     await Promise.all(keys.map((key) => kv.delete(key)));
 }
 

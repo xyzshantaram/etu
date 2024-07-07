@@ -25,14 +25,13 @@ const action = async ({ project }: EEditSessionOpts) => {
 
             let inp = "";
             while (inp != "exit") {
-
                 inp = await Select.prompt({
                     message: "What would you like to do?",
                     options: ["change start time", "change end time", "remove end time", "rename", "exit"],
                 });
 
                 const acceptTime = async () => {
-                    let s = await Input.prompt({
+                    const s = await Input.prompt({
                         message: "What should I set the time to? (yyyy-mm-dd hh:mm:ss)",
                         validate: (s) => !isNaN(new Date(s).valueOf()),
                     });
