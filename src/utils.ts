@@ -97,7 +97,7 @@ export const humanReadable = (ms: number, short = false) => {
     const result: string[] = [];
 
     if (short) {
-        return keys.map(key => times[key]?.toString().padStart(2, '0') + key).join('');
+        return keys.map((key) => times[key]?.toString().padStart(2, "0") + key).join("");
     }
 
     keys.forEach((unit, i) => {

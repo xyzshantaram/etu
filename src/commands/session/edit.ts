@@ -23,7 +23,6 @@ const action = async ({ project }: EEditSessionOpts) => {
             console.log("Current values:");
             console.log(map[toEdit].obj);
 
-
             let changed = { ...map[toEdit].obj };
 
             let inp = "";

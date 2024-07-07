@@ -46,7 +46,6 @@ const action = async ({ short, project }: ESummaryOpts) => {
             const gross = timeHours * project.rate;
             const hoursExpr = `(${decHours} h - ${advance} h)`;
 
-
             if (ongoingTime) {
                 const session = sessions.at(-1);
                 console.log(`Current session: ${sessionName(session?.value.name, false)}`);
@@ -95,13 +94,13 @@ function pad(strings: TemplateStringsArray, ...args: any[]) {
 
 function toEnglishIndex(n: number) {
     const last = n.toString().at(-1);
-    if (last === '1') {
+    if (last === "1") {
         return `${n}st`;
     }
-    if (last === '2') {
+    if (last === "2") {
         return `${n}nd`;
     }
-    if (last === '3') {
+    if (last === "3") {
         return `${n}rd`;
     }
 
@@ -126,7 +125,11 @@ function fmtSession(idx: string, sess: Session, indentWidth: number) {
         if (y1 === y2 && a1 === a2 && d1 === d2) {
             strings.push(pad`\n${indent}on ${y1}-${a1}-${d1} from ${h1}:${m1} to ${h2}:${m2}`);
         } else if (y1 === y2 && a1 === a2 && d1 !== d2) {
-            strings.push(pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${toEnglishIndex(d2)})`);
+            strings.push(
+                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${
+                    toEnglishIndex(d2)
+                })`,
+            );
         } else if (y1 === y2 && a1 !== a2 && d1 !== d2) {
             strings.push(pad`\n${indent}in ${y1} from ${a1}-${d1} ${h1}:${m1} to ${a2}-${d2} ${h2}:${m2}`);
         } else {
