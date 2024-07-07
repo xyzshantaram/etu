@@ -79,14 +79,14 @@ const destructureDate = (d: Date) => {
     return [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()] as const;
 };
 
-function pad(strings: TemplateStringsArray, ...args: any[]) {
+function pad(strings: TemplateStringsArray, ...args: (string | number | boolean)[]) {
     const res: string[] = [];
     for (let i = 0; i < strings.length; i++) {
         res.push(strings[i]);
         if (typeof args[i] !== "undefined") {
             if (typeof args[i] === "number") {
                 res.push(args[i].toString().padStart(2, "0"));
-            } else res.push(args[i]);
+            } else res.push(args[i].toString());
         }
     }
     return muted(res.join(""));
@@ -126,9 +126,8 @@ function fmtSession(idx: string, sess: Session, indentWidth: number) {
             strings.push(pad`\n${indent}on ${y1}-${a1}-${d1} from ${h1}:${m1} to ${h2}:${m2}`);
         } else if (y1 === y2 && a1 === a2 && d1 !== d2) {
             strings.push(
-                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${
-                    toEnglishIndex(d2)
-                })`,
+                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${toEnglishIndex(d2)
+                    })`,
             );
         } else if (y1 === y2 && a1 !== a2 && d1 !== d2) {
             strings.push(pad`\n${indent}in ${y1} from ${a1}-${d1} ${h1}:${m1} to ${a2}-${d2} ${h2}:${m2}`);
