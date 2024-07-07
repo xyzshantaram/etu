@@ -8,7 +8,7 @@ interface EStartOpts {
 }
 
 const action = async (name: Maybe<string>, { project }: EStartOpts) => {
-    name = sessionName(name);
+    name = sessionName(name, false);
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
@@ -21,8 +21,7 @@ const action = async (name: Maybe<string>, { project }: EStartOpts) => {
             const project = await storage.getProjectById(id);
 
             console.log(
-                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
-                    new Date(currentTime).toLocaleString()
+                `Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()
                 }`,
             );
         },
