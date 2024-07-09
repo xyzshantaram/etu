@@ -1,6 +1,15 @@
 import { Command } from "@/commander";
 import { match } from "@/oxide";
-import { SELECTED_DATE_END_BEFORE_START, SELECTED_DATE_FUTURE_ERROR, SELECTED_DATE_START_AFTER_END, descTime, getProjectId, scream, timeMs } from "../../utils.ts";
+import {
+    descTime,
+    getProjectId,
+    humanReadable,
+    scream,
+    SELECTED_DATE_END_BEFORE_START,
+    SELECTED_DATE_FUTURE_ERROR,
+    SELECTED_DATE_START_AFTER_END,
+    timeMs,
+} from "../../utils.ts";
 import { getSessionChoices } from "./mod.ts";
 import { Input, Select } from "@/cliffy/prompt";
 import * as storage from "../../storage.ts";
@@ -20,13 +29,18 @@ const action = async ({ project }: EEditSessionOpts) => {
                 options: choices,
             });
 
-            console.log("Current values:");
-            console.log(map[toEdit].obj);
-
             let changed = { ...map[toEdit].obj };
 
             let inp = "";
             while (inp != "exit") {
+                console.log("Current values:");
+                console.table({
+                    name: changed.name,
+                    start: new Date(changed.start).toLocaleString(),
+                    end: changed.end ? new Date(changed.end).toLocaleString() : "(ongoing session; no end time)",
+                    duration: humanReadable((changed.end || Date.now()) - changed.start)
+                });
+
                 inp = await Select.prompt({
                     message: "What would you like to do?",
                     options: ["change start time", "change end time", "remove end time", "rename", "exit"],
