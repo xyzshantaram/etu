@@ -4,7 +4,8 @@
     "@/oxide": "npm:oxide.ts@1.1.0",
     "@/ulid": "https://deno.land/x/ulid@v0.3.0/mod.ts",
     "@/cliffy/prompt": "https://deno.land/x/cliffy@v1.0.0-rc.4/prompt/mod.ts",
-    "@/cliffy/ansi": "https://deno.land/x/cliffy@v1.0.0-rc.4/ansi/mod.ts"
+    "@/cliffy/ansi": "https://deno.land/x/cliffy@v1.0.0-rc.4/ansi/mod.ts",
+    "@/cliffy/table": "https://deno.land/x/cliffy@v1.0.0-rc.4/table/mod.ts"
   },
   "tasks": {
     "run": "deno run --unstable-kv --allow-env --allow-read --allow-write src/etu.ts",

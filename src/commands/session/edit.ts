@@ -3,15 +3,19 @@ import { match } from "@/oxide";
 import {
     descTime,
     getProjectId,
+    heading,
     humanReadable,
     scream,
     SELECTED_DATE_END_BEFORE_START,
     SELECTED_DATE_FUTURE_ERROR,
     SELECTED_DATE_START_AFTER_END,
+    sessionName,
+    success,
     timeMs,
 } from "../../utils.ts";
 import { getSessionChoices } from "./mod.ts";
 import { Input, Select } from "@/cliffy/prompt";
+import { Table } from "@/cliffy/table";
 import * as storage from "../../storage.ts";
 
 interface EEditSessionOpts {
@@ -34,12 +38,15 @@ const action = async ({ project }: EEditSessionOpts) => {
             let inp = "";
             while (inp != "exit") {
                 console.log("Current values:");
-                console.table({
-                    name: changed.name,
-                    start: new Date(changed.start).toLocaleString(),
-                    end: changed.end ? new Date(changed.end).toLocaleString() : "(ongoing session; no end time)",
-                    duration: humanReadable((changed.end || Date.now()) - changed.start)
-                });
+                new Table
+                    (...Object.entries({
+                        name: heading(sessionName(changed.name, false)),
+                        start: new Date(changed.start).toLocaleString(),
+                        end: changed.end ? new Date(changed.end).toLocaleString() : "(ongoing session; no end time)",
+                        duration: success(humanReadable((changed.end || Date.now()) - changed.start))
+                    }))
+                    .border(true)
+                    .render();
 
                 inp = await Select.prompt({
                     message: "What would you like to do?",
