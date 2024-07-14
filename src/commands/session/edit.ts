@@ -38,13 +38,12 @@ const action = async ({ project }: EEditSessionOpts) => {
             let inp = "";
             while (inp != "exit") {
                 console.log("Current values:");
-                new Table
-                    (...Object.entries({
-                        name: heading(sessionName(changed.name, false)),
-                        start: new Date(changed.start).toLocaleString(),
-                        end: changed.end ? new Date(changed.end).toLocaleString() : "(ongoing session; no end time)",
-                        duration: success(humanReadable((changed.end || Date.now()) - changed.start))
-                    }))
+                new Table(...Object.entries({
+                    name: heading(sessionName(changed.name, false)),
+                    start: new Date(changed.start).toLocaleString(),
+                    end: changed.end ? new Date(changed.end).toLocaleString() : "(ongoing session; no end time)",
+                    duration: success(humanReadable((changed.end || Date.now()) - changed.start)),
+                }))
                     .border(true)
                     .render();
 

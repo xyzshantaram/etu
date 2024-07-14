@@ -7,9 +7,10 @@ import { success } from "../../utils.ts";
 interface ESummaryOpts {
     short: boolean;
     project: string;
+    timeOnly: boolean;
 }
 
-const action = async ({ short, project }: ESummaryOpts) => {
+const action = async ({ short, project, timeOnly }: ESummaryOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
@@ -24,6 +25,10 @@ const action = async ({ short, project }: ESummaryOpts) => {
                 sessions.push(session);
                 if (!session.value.end) ongoingTime += Date.now() - session.value.start;
                 else time += session.value.end - session.value.start;
+            }
+
+            if (timeOnly) {
+                return console.log(humanReadable(ongoingTime + time, short));
             }
 
             console.log(`Project ${heading(project.name)}\n`);
@@ -69,7 +74,11 @@ export const log = new Command("log")
         "-p --project <string>",
         "id of the project to summarize. Uses the default if not specified.",
     )
-    .option("-s --short", "Don't print the/ log of hours worked.")
+    .option("--time-only", "Print only the total hours worked.")
+    .option(
+        "-s --short",
+        "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
+    )
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
