@@ -6,9 +6,10 @@ import * as storage from "../../storage.ts";
 interface EStatusOpts {
     short: boolean;
     project: string;
+    showProject: boolean;
 }
 
-const action = async ({ short, project }: EStatusOpts) => {
+const action = async ({ short, project, showProject = false }: EStatusOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
@@ -17,7 +18,7 @@ const action = async ({ short, project }: EStatusOpts) => {
 
             if (short) {
                 if (session && !session.value.end) {
-                    console.log(`${project.slug}:${humanReadable(Date.now() - session.value.start, true)}`);
+                    console.log(`${showProject ? project.slug + ':' : ''}${humanReadable(Date.now() - session.value.start, true)}`);
                 }
                 return;
             }
@@ -46,6 +47,10 @@ export const status = new Command("status")
     .option(
         "-s --short",
         "Print only the time in a short format ([xx]h[yy]m[zz]s). If no session is ongoing, exit silently.",
+    )
+    .option(
+        "--show-project",
+        "For use with --short. Prints the project slug along with the time spent.",
     )
     .description("Print the status of the ongoing session, if any.")
     .action(action);
