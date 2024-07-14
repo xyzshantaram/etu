@@ -4,6 +4,7 @@ import { config, setupDefaults } from "./commands/config/mod.ts";
 import { log } from "./commands/log/mod.ts";
 import { session } from "./commands/session/mod.ts";
 import { project } from "./commands/project/mod.ts";
+import { status } from "./commands/status/mod.ts";
 
 export const createEtu = () => {
     const etu = new Command();
@@ -14,7 +15,7 @@ export const createEtu = () => {
         .version("0.0.1")
         .showHelpAfterError();
 
-    [config, log, session, project].forEach((cmd) => etu.addCommand(cmd));
+    [config, log, session, project, status].forEach((cmd) => etu.addCommand(cmd));
 
     return etu;
 };
