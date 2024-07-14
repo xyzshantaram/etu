@@ -17,7 +17,7 @@ const action = async ({ short, project }: EStatusOpts) => {
 
             if (short) {
                 if (session && !session.value.end) {
-                    console.log(humanReadable(Date.now() - session.value.start, true));
+                    console.log(`${project.slug}:${humanReadable(Date.now() - session.value.start, true)}`);
                 }
                 return;
             }
@@ -31,8 +31,7 @@ const action = async ({ short, project }: EStatusOpts) => {
             }
 
             console.log(
-                `Time spent in ongoing session for project ${heading(project.name)}: ${
-                    success(humanReadable(Date.now() - session.value.start))
+                `Time spent in ongoing session for project ${heading(project.name)}: ${success(humanReadable(Date.now() - session.value.start))
                 }`,
             );
         },
