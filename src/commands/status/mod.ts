@@ -13,7 +13,7 @@ const action = async ({ short, project, showProject = false }: EStatusOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
-            const project = (await storage.getProjectById(id)).unwrap();
+            const project = await storage.getProjectById(id).then(f => f.unwrap());
             const session = await storage.getLastSession(id);
 
             if (short) {
