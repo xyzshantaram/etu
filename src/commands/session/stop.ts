@@ -27,7 +27,7 @@ const action = async ({ project }: EStopOpts) => {
 export const stop = new Command("stop")
     .option(
         "-p --project <string>",
-        "id of the project to stop. Uses the default if not specified.",
+        "id of the project to stop the session for. Uses the default if not specified.",
     )
     .description("Stop the clock.")
     .action(action);

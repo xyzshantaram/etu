@@ -5,6 +5,7 @@ import * as storage from "../../storage.ts";
 import { deleteSession } from "./delete.ts";
 import { Session, sessionName } from "../../utils.ts";
 import { edit } from "./edit.ts";
+import { cont } from "./continue.ts";
 
 export const getSessionChoices = async (id: string) => {
     const choices: string[] = [];
@@ -22,7 +23,8 @@ export const getSessionChoices = async (id: string) => {
 
 export const session = new Command("session")
     .description("Edit and manage sessions.")
-    .addCommand(start)
-    .addCommand(stop)
+    .addCommand(cont)
     .addCommand(deleteSession)
-    .addCommand(edit);
+    .addCommand(edit)
+    .addCommand(start)
+    .addCommand(stop);
