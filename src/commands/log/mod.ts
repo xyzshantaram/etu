@@ -2,7 +2,7 @@ import { Command } from "@/commander";
 import { Table } from "@/cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, msToTime, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
 import { success } from "../../utils.ts";
 
 interface ESummaryOpts {
@@ -197,20 +197,16 @@ function printTimesheet(sessions: Session[]) {
     });
 
     table.push([heading("Month"), heading("Date"), heading("Hours Logged")]);
-    let current_month = -1;
+    let currentMonth = -1;
 
     buckets.forEach((millis, key) => {
-        let bucket_date = new Date(key)
-        let month_string = "";
-        if (current_month != bucket_date.getMonth() - 1) {
-            current_month = bucket_date.getMonth() - 1;
-            month_string = new Intl.DateTimeFormat("en-GB", {month: "long"}).format(bucket_date)
+        let bucketDate = new Date(key)
+        let monthString = "";
+        if (currentMonth != bucketDate.getMonth() - 1) {
+            currentMonth = bucketDate.getMonth() - 1;
+            monthString = new Intl.DateTimeFormat("en-GB", {month: "long"}).format(bucketDate)
         }
-        const minutes  = Math.floor(millis / 1000 / 60);
-        const hours = Math.floor(minutes / 60);
-        const seconds =
-            Math.floor(millis / 1000) - minutes * 60;
-        table.push([month_string, heading(new Intl.DateTimeFormat("en-GB").format(bucket_date)), success(`${hours}h ${minutes - hours * 60}m ${seconds}s`)]);
+        table.push([monthString, heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)), success(humanReadable(millis, true))]);
     });
 
     Table.from(table).border(true).render();
