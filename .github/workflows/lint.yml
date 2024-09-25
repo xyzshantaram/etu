@@ -1,0 +1,23 @@
+name: Lint
+on:
+  pull_request_target:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - name: Lint code
+        run: deno lint
+      - name: Check if formatted
+        run: deno fmt --check
+
+
+
+
