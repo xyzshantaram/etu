@@ -162,17 +162,17 @@ function printTimesheet(sessions: Session[]) {
     sessions.forEach((session) => {
         let start = new Date(session.start);
         let end = new Date(session.end ? session.end : Date.now());
-        const [startyear, startmonth, startdate] = destructureDate(start);
-        const [endyear, endmonth, enddate] = destructureDate(end);
+        const [startYear, startMonth, startDate] = destructureDate(start);
+        const [endYear, endMonth, endDate] = destructureDate(end);
 
         const updateBucket = (key: number, val: number) => {
             let prevVal = buckets.get(key) || 0;
             buckets.set(key, Math.min(prevVal + val, 24 * 60 * 60 * 1000));
         };
 
-        if (startdate === enddate) {
+        if (startDate === endDate) {
             // session does not spill into another day
-            const key = new Date(startyear, startmonth - 1, startdate).getTime();
+            const key = new Date(startYear, startMonth - 1, startDate).getTime();
             let hours = end.getTime() - start.getTime();
             updateBucket(key, hours);
         } else {
