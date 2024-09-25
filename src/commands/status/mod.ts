@@ -13,12 +13,16 @@ const action = async ({ short, project, showProject = false }: EStatusOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
-            const project = await storage.getProjectById(id).then(f => f.unwrap());
+            const project = await storage.getProjectById(id).then((f) => f.unwrap());
             const session = await storage.getLastSession(id);
 
             if (short) {
                 if (session && !session.value.end) {
-                    console.log(`${showProject ? project.slug + ':' : ''}${humanReadable(Date.now() - session.value.start, true)}`);
+                    console.log(
+                        `${showProject ? project.slug + ":" : ""}${
+                            humanReadable(Date.now() - session.value.start, true)
+                        }`,
+                    );
                 }
                 return;
             }
@@ -32,7 +36,8 @@ const action = async ({ short, project, showProject = false }: EStatusOpts) => {
             }
 
             console.log(
-                `Time spent in ongoing session for project ${heading(project.name)}: ${success(humanReadable(Date.now() - session.value.start))
+                `Time spent in ongoing session for project ${heading(project.name)}: ${
+                    success(humanReadable(Date.now() - session.value.start))
                 }`,
             );
         },

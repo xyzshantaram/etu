@@ -141,8 +141,9 @@ function fmtSession(idx: string, sess: Session, indentWidth: number) {
             strings.push(pad`\n${indent}on ${y1}-${a1}-${d1} from ${h1}:${m1} to ${h2}:${m2}`);
         } else if (y1 === y2 && a1 === a2 && d1 !== d2) {
             strings.push(
-                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${toEnglishIndex(d2)
-                    })`,
+                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${
+                    toEnglishIndex(d2)
+                })`,
             );
         } else if (y1 === y2 && a1 !== a2 && d1 !== d2) {
             strings.push(pad`\n${indent}in ${y1} from ${a1}-${d1} ${h1}:${m1} to ${a2}-${d2} ${h2}:${m2}`);
@@ -204,9 +205,13 @@ function printTimesheet(sessions: Session[]) {
         let monthString = "";
         if (currentMonth != bucketDate.getMonth() - 1) {
             currentMonth = bucketDate.getMonth() - 1;
-            monthString = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(bucketDate)
+            monthString = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(bucketDate);
         }
-        table.push([monthString, heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)), success(humanReadable(millis, true))]);
+        table.push([
+            monthString,
+            heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)),
+            success(humanReadable(millis, true)),
+        ]);
     });
 
     Table.from(table).border(true).render();

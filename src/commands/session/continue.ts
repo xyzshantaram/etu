@@ -24,7 +24,8 @@ const action = async ({ project }: EStartOpts) => {
             const project = await storage.getProjectById(id);
 
             console.log(
-                `Started session ${name} in project ${project.unwrap().name}. Current time: ${new Date(currentTime).toLocaleString()
+                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
+                    new Date(currentTime).toLocaleString()
                 }`,
             );
         },
