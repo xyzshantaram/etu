@@ -1,9 +1,19 @@
 name: Lint
 on:
-  pull_request_target:
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - deno.json
+      - deno.lock
   pull_request:
     branches:
       - main
+    paths:
+      - src/**
+      - deno.json
+      - deno.lock
 
 jobs:
   check:

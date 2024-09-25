@@ -2,7 +2,7 @@ import { Command } from "@/commander";
 import { Table } from "@/cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, msToTime, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
 import { success } from "../../utils.ts";
 
 interface ESummaryOpts {
@@ -157,27 +157,27 @@ function fmtSession(idx: string, sess: Session, indentWidth: number) {
 function printTimesheet(sessions: Session[]) {
     // bucket sessions into days
 
-    let buckets: Map<number, number> = new Map();
-    let table: string[][] = [];
+    const buckets: Map<number, number> = new Map();
+    const table: string[][] = [];
     sessions.forEach((session) => {
-        let start = new Date(session.start);
-        let end = new Date(session.end ? session.end : Date.now());
+        const start = new Date(session.start);
+        const end = new Date(session.end ? session.end : Date.now());
         const [startYear, startMonth, startDate] = destructureDate(start);
-        const [endYear, endMonth, endDate] = destructureDate(end);
+        const [_, endDate] = destructureDate(end);
 
         const updateBucket = (key: number, val: number) => {
-            let prevVal = buckets.get(key) || 0;
-            buckets.set(key, Math.min(prevVal + val, 24 * 60 * 60 * 1000));
+            const prev = buckets.get(key) || 0;
+            buckets.set(key, Math.min(prev + val, 24 * 60 * 60 * 1000));
         };
 
         if (startDate === endDate) {
             // session does not spill into another day
             const key = new Date(startYear, startMonth - 1, startDate).getTime();
-            let hours = end.getTime() - start.getTime();
+            const hours = end.getTime() - start.getTime();
             updateBucket(key, hours);
         } else {
             // session spans multiple days
-            for (let pointer = new Date(start); pointer <= end; pointer.setDate(pointer.getDate() + 1)) {
+            for (const pointer = new Date(start); pointer <= end; pointer.setDate(pointer.getDate() + 1)) {
                 const key = new Date(pointer.getFullYear(), pointer.getMonth(), pointer.getDate()).getTime();
                 if (pointer.getDay() == start.getDay()) {
                     // at the beginning
@@ -200,11 +200,11 @@ function printTimesheet(sessions: Session[]) {
     let currentMonth = -1;
 
     buckets.forEach((millis, key) => {
-        let bucketDate = new Date(key)
+        const bucketDate = new Date(key);
         let monthString = "";
         if (currentMonth != bucketDate.getMonth() - 1) {
             currentMonth = bucketDate.getMonth() - 1;
-            monthString = new Intl.DateTimeFormat("en-GB", {month: "long"}).format(bucketDate)
+            monthString = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(bucketDate)
         }
         table.push([monthString, heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)), success(humanReadable(millis, true))]);
     });
