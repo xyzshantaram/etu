@@ -2,17 +2,17 @@ import { Command } from "@/commander";
 import { Table } from "@/cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
 import { success } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
     project: string;
     timeOnly: boolean;
-    timesheet: boolean;
+    days: boolean;
 }
 
-const action = async ({ short, project, timeOnly, timesheet }: ESummaryOpts) => {
+const action = async ({ short, project, timeOnly, days }: ESummaryOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
@@ -39,7 +39,7 @@ const action = async ({ short, project, timeOnly, timesheet }: ESummaryOpts) => 
                 scream("No sessions exist for the specified project");
             }
 
-            if (timesheet) {
+            if (days) {
                 printTimesheet(sessions.map((entry) => entry.value));
             } else if (!short) {
                 printLog(sessions.map((entry) => entry.value));
@@ -83,7 +83,7 @@ export const log = new Command("log")
         "-s --short",
         "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
     )
-    .option("-ts --timesheet", "Print a day-wise timesheet of hours worked")
+    .option("-d --days", "Group hours by day instead of session")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
@@ -94,67 +94,6 @@ const destructureDate = (d: Date) => {
     return [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()] as const;
 };
 
-function pad(strings: TemplateStringsArray, ...args: (string | number | boolean)[]) {
-    const res: string[] = [];
-    for (let i = 0; i < strings.length; i++) {
-        res.push(strings[i]);
-        if (typeof args[i] !== "undefined") {
-            if (typeof args[i] === "number") {
-                res.push(args[i].toString().padStart(2, "0"));
-            } else res.push(args[i].toString());
-        }
-    }
-    return muted(res.join(""));
-}
-
-function toEnglishIndex(n: number) {
-    const last = n.toString().at(-1);
-    if (last === "1") {
-        return `${n}st`;
-    }
-    if (last === "2") {
-        return `${n}nd`;
-    }
-    if (last === "3") {
-        return `${n}rd`;
-    }
-
-    return `${n}th`;
-}
-
-function fmtSession(idx: string, sess: Session, indentWidth: number) {
-    const start = new Date(sess.start);
-    const indent = " ".repeat(indentWidth);
-
-    const strings = [`  ${idx}. ${heading(sessionName(sess.name, false))}`];
-    const duration = humanReadable((sess.end || Date.now()) - sess.start, true);
-    strings.push(` (${success(duration)})`);
-
-    if (!sess.end) {
-        strings.push(`\n from ${start.toLocaleString()}`);
-    } else {
-        const end = new Date(sess.end);
-        const [y1, a1, d1, h1, m1] = destructureDate(start);
-        const [y2, a2, d2, h2, m2] = destructureDate(end);
-
-        if (y1 === y2 && a1 === a2 && d1 === d2) {
-            strings.push(pad`\n${indent}on ${y1}-${a1}-${d1} from ${h1}:${m1} to ${h2}:${m2}`);
-        } else if (y1 === y2 && a1 === a2 && d1 !== d2) {
-            strings.push(
-                pad`\n${indent}in ${y1}-${a1} from ${h1}:${m1} (${toEnglishIndex(d1)}) to ${h2}:${m2} (${
-                    toEnglishIndex(d2)
-                })`,
-            );
-        } else if (y1 === y2 && a1 !== a2 && d1 !== d2) {
-            strings.push(pad`\n${indent}in ${y1} from ${a1}-${d1} ${h1}:${m1} to ${a2}-${d2} ${h2}:${m2}`);
-        } else {
-            strings.push(pad`\n${indent}from ${y1}-${a1}-${d1} ${h1}:${m1} to ${y2}-${a2}-${d2} ${h2}:${m2}`);
-        }
-    }
-
-    return strings.join("");
-}
-
 function printTimesheet(sessions: Session[]) {
     // bucket sessions into days
 
@@ -164,11 +103,11 @@ function printTimesheet(sessions: Session[]) {
         const start = new Date(session.start);
         const end = new Date(session.end ? session.end : Date.now());
         const [startYear, startMonth, startDate] = destructureDate(start);
-        const [_, endDate] = destructureDate(end);
+        const [_, __, endDate] = destructureDate(end);
 
         const updateBucket = (key: number, val: number) => {
             const prev = buckets.get(key) || 0;
-            buckets.set(key, Math.min(prev + val, 24 * 60 * 60 * 1000));
+            buckets.set(key, Math.min(prev + val, timeMs({ h: 24 })));
         };
 
         if (startDate === endDate) {
@@ -197,19 +136,19 @@ function printTimesheet(sessions: Session[]) {
         }
     });
 
-    table.push([heading("Month"), heading("Date"), heading("Hours Logged")]);
+    table.push(["Month", "Date", "Hours"]);
     let currentMonth = -1;
 
     buckets.forEach((millis, key) => {
-        const bucketDate = new Date(key);
-        let monthString = "";
-        if (currentMonth != bucketDate.getMonth() - 1) {
-            currentMonth = bucketDate.getMonth() - 1;
-            monthString = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(bucketDate);
+        const date = new Date(key);
+        let month = "";
+        if (currentMonth != date.getMonth() - 1) {
+            currentMonth = date.getMonth() - 1;
+            month = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(date);
         }
         table.push([
-            monthString,
-            heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)),
+            month,
+            heading(new Intl.DateTimeFormat("en-GB").format(date)),
             success(humanReadable(millis, true)),
         ]);
     });
@@ -217,15 +156,30 @@ function printTimesheet(sessions: Session[]) {
     Table.from(table).border(true).render();
 }
 
+const toDateStr = (time: number) => {
+    const date = new Date(time);
+    const [y, a, d, h, m] = destructureDate(date).map((itm) => itm.toString().padStart(2, "0"));
+    return `${y}-${a}-${d} ${h}:${m}`;
+};
+
 function printLog(sessions: Session[]) {
     console.log(heading("Sessions"));
 
+    const rows = [["Index", "Name", "From", "Duration"]];
     const length = sessions.length.toString().length;
     let count = 0;
     const idx = () => (++count).toString().padStart(length, "0");
     for (const session of sessions) {
         if (!session.end) continue;
-        console.log(fmtSession(idx(), session, length + 4));
+        const duration = humanReadable((session.end || Date.now()) - session.start, true);
+        rows.push([
+            idx(),
+            heading(sessionName(session.name, false)),
+            toDateStr(session.start),
+            success(duration),
+        ]);
     }
+
+    Table.from(rows).border(true).render();
     console.log("");
 }
