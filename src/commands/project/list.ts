@@ -10,11 +10,10 @@ const action = async () => {
     const t = new Table().header(["Project", "ID", "Rate", "Advance"]).border(true);
     for await (const project of storage.getProjects()) {
         t.push([
-
             heading(project.name),
             muted(project.slug),
             success(`${currency}${project.rate}/hr`),
-            info(`${project.advance || 0} h`)
+            info(`${project.advance || 0} h`),
         ]);
         count += 1;
     }
