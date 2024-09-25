@@ -1,25 +1,29 @@
 import { Command } from "@/commander";
 import * as storage from "../../storage.ts";
-import { heading, info } from "../../utils.ts";
+import { heading, info, muted, success } from "../../utils.ts";
+import { Table } from "@/cliffy/table";
 
 const currency = await storage.getConfigValue("currency");
 
 const action = async () => {
     let count = 0;
+    const t = new Table().header(["Project", "ID", "Rate", "Advance"]).border(true);
     for await (const project of storage.getProjects()) {
-        const header = `**** ${heading(project.name)} ****`;
-        const rate = info(`${currency}${project.rate}/hr`);
-        console.log(header);
-        console.log(`ID: ${info(project.slug)}`);
-        console.log(`Rate: ${rate}`);
-        console.log(`Advance: ${info(`${project.advance || 0} h`)}`);
-        console.log("*".repeat(project.name.length + 10));
+        t.push([
+
+            heading(project.name),
+            muted(project.slug),
+            success(`${currency}${project.rate}/hr`),
+            info(`${project.advance || 0} h`)
+        ]);
         count += 1;
     }
 
     if (count === 0) {
         console.log("No projects found. Create one with `etu project new`.");
     }
+
+    t.render();
 };
 
 export const list = new Command("list")
