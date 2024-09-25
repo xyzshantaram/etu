@@ -1,16 +1,18 @@
 import { Command } from "@/commander";
+import { Table } from "@/cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { getProjectId, heading, humanReadable, msToTime, muted, scream, Session, sessionName, timeMs } from "../../utils.ts";
 import { success } from "../../utils.ts";
 
 interface ESummaryOpts {
     short: boolean;
     project: string;
     timeOnly: boolean;
+    timesheet: boolean;
 }
 
-const action = async ({ short, project, timeOnly }: ESummaryOpts) => {
+const action = async ({ short, project, timeOnly, timesheet }: ESummaryOpts) => {
     return match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
@@ -37,7 +39,9 @@ const action = async ({ short, project, timeOnly }: ESummaryOpts) => {
                 scream("No sessions exist for the specified project");
             }
 
-            if (!short) {
+            if (timesheet) {
+                printTimesheet(sessions.map((entry) => entry.value));
+            } else if (!short) {
                 printLog(sessions.map((entry) => entry.value));
             }
 
@@ -79,6 +83,7 @@ export const log = new Command("log")
         "-s --short",
         "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
     )
+    .option("-ts --timesheet", "Print a day-wise timesheet of hours worked")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
@@ -147,6 +152,64 @@ function fmtSession(idx: string, sess: Session, indentWidth: number) {
     }
 
     return strings.join("");
+}
+
+function printTimesheet(sessions: Session[]) {
+    // bucket sessions into days
+
+    let buckets: Map<number, number> = new Map();
+    let table: string[][] = [];
+    sessions.forEach((session) => {
+        let start = new Date(session.start);
+        let end = new Date(session.end ? session.end : Date.now());
+        const [startYear, startMonth, startDate] = destructureDate(start);
+        const [endYear, endMonth, endDate] = destructureDate(end);
+
+        const updateBucket = (key: number, val: number) => {
+            let prevVal = buckets.get(key) || 0;
+            buckets.set(key, Math.min(prevVal + val, 24 * 60 * 60 * 1000));
+        };
+
+        if (startDate === endDate) {
+            // session does not spill into another day
+            const key = new Date(startYear, startMonth - 1, startDate).getTime();
+            let hours = end.getTime() - start.getTime();
+            updateBucket(key, hours);
+        } else {
+            // session spans multiple days
+            for (let pointer = new Date(start); pointer <= end; pointer.setDate(pointer.getDate() + 1)) {
+                const key = new Date(pointer.getFullYear(), pointer.getMonth(), pointer.getDate()).getTime();
+                if (pointer.getDay() == start.getDay()) {
+                    // at the beginning
+                    pointer.setHours(23, 59, 59, 999);
+                    updateBucket(key, pointer.getTime() - start.getTime());
+                    pointer.setHours(0, 0, 0, 0);
+                } else if (pointer.getDay() == end.getDay()) {
+                    // at the end
+                    pointer.setHours(0, 0, 0, 0);
+                    updateBucket(key, end.getTime() - pointer.getTime());
+                } else {
+                    // in the middle, hopefully nobody is working 24 hours a day lol
+                    updateBucket(key, 24 * 60 * 60 * 1000);
+                }
+            }
+        }
+    });
+
+    table.push([heading("Month"), heading("Date"), heading("Hours Logged")]);
+    let currentMonth = -1;
+
+    buckets.forEach((millis, key) => {
+        let bucketDate = new Date(key)
+        let monthString = "";
+        if (currentMonth != bucketDate.getMonth() - 1) {
+            currentMonth = bucketDate.getMonth() - 1;
+            monthString = new Intl.DateTimeFormat("en-GB", {month: "long"}).format(bucketDate)
+        }
+        table.push([monthString, heading(new Intl.DateTimeFormat("en-GB").format(bucketDate)), success(humanReadable(millis, true))]);
+    });
+
+    Table.from(table).border(true).render();
 }
 
 function printLog(sessions: Session[]) {
