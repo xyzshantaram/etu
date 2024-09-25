@@ -49,15 +49,17 @@ Projects and sessions can be edited as well.
 
 ## Installation
 
-You'll need [Deno](https://deno.land) installed. Then, clone this repo, then run:
+Download the latest release from the [Releases](./releases/) page. Then place it somewhere on your path.
+
+## Building
+
+You'll need [Deno](https://deno.land) installed. Then, clone this repo and run:
 
 ```sh
 deno task build
 ```
 
 You should end up with a file called `etu` in the current directory.
-
-Copy it to wherever you keep your binaries. That's it!
 
 ## LICENSE
 
