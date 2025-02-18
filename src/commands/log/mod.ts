@@ -39,10 +39,11 @@ const action = async ({ short, project, timeOnly, days }: ESummaryOpts) => {
                 scream("No sessions exist for the specified project");
             }
 
+            const list = sessions.map(entry => entry.value).sort((a, b) => a.start - b.start);
             if (days) {
-                printTimesheet(sessions.map((entry) => entry.value));
+                printTimesheet(list);
             } else if (!short) {
-                printLog(sessions.map((entry) => entry.value));
+                printLog(list);
             }
 
             const curr = await storage.getConfigValue("currency");
