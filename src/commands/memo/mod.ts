@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 import { deleteMemo } from "./delete.ts";
 import { edit } from "./edit.ts";
 import { add } from "./add.ts";

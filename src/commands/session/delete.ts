@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 import { Select } from "@cliffy/prompt";
 import { match } from "@/oxide";
 import { getProjectId, scream } from "../../utils.ts";

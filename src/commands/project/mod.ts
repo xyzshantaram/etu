@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 import { create } from "./new.ts";
 import { setDefault } from "./default.ts";
 import { list } from "./list.ts";

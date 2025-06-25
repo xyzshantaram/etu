@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 import * as storage from "../../storage.ts";
 import { heading, info, muted, success } from "../../utils.ts";
 import { Table } from "@cliffy/table";

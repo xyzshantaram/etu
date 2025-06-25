@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 import { heading, info, Maybe, scream, slugify, timeMs } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 

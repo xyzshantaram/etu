@@ -1,4 +1,4 @@
-import { Command } from "@/commander";
+import { Command } from "commander";
 
 import { config, setupDefaults } from "./commands/config/mod.ts";
 import { log } from "./commands/log/mod.ts";
