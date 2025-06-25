@@ -2,74 +2,167 @@ import { Command } from "commander";
 import { Table } from "@cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
+import { dataPath, getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
 import { success } from "../../utils.ts";
+import { Liquid } from "liquidjs";
+import * as path from "@std/path";
 
 interface ESummaryOpts {
     short: boolean;
     project: string;
     timeOnly: boolean;
     days: boolean;
+    template?: string;
 }
 
-const action = async ({ short, project, timeOnly, days }: ESummaryOpts) => {
-    return match(await getProjectId(project), {
+interface LogData {
+    project: {
+        id: string;
+        name: string;
+        rate: number;
+        advance: number;
+    };
+    sessions: Session[];
+    time: number;
+    ongoingTime: number;
+    currency: string;
+    currentSession?: Session;
+    // Precomputed values for templates and view functions
+    elapsed: number;
+    decimalHours: number;
+    gross: number;
+    advanceRemaining: number;
+    finalAmount: number;
+    hoursExpr: string;
+}
+
+const gatherLogData = async (projectId: string): Promise<LogData> => {
+    const sessions = [];
+    let time = 0;
+    let ongoingTime = 0;
+
+    const project = (await storage.getProjectById(projectId)).unwrap();
+    const advance = project.advance || 0;
+
+    for await (const session of storage.getSessions(projectId)) {
+        sessions.push(session);
+        if (!session.value.end) ongoingTime += Date.now() - session.value.start;
+        else time += session.value.end - session.value.start;
+    }
+
+    const currency = await storage.getConfigValue("currency");
+    const currentSession = sessions.find((s) => !s.value.end);
+
+    // Precompute values for templates and view functions
+    const elapsed = ongoingTime + time;
+    const decimalHours = elapsed / 3600000;
+    const gross = decimalHours * project.rate;
+    const advanceRemaining = (advance * 3600000) - elapsed;
+    const finalAmount = (decimalHours - advance) * project.rate;
+    const hoursExpr = `(${decimalHours.toFixed(2)} h - ${advance} h)`;
+
+    return {
+        project: {
+            id: projectId,
+            name: project.name,
+            rate: project.rate,
+            advance,
+        },
+        sessions: sessions.map((s) => s.value).sort((a, b) => a.start - b.start),
+        time,
+        ongoingTime,
+        currency,
+        currentSession: currentSession?.value,
+        elapsed,
+        decimalHours: Number(decimalHours.toFixed(2)),
+        gross: Number(gross.toFixed(2)),
+        advanceRemaining,
+        finalAmount: Number(finalAmount.toFixed(2)),
+        hoursExpr,
+    };
+};
+
+const renderLogData = async (data: LogData, opts: ESummaryOpts) => {
+    const { short, timeOnly, days, template } = opts;
+    const {
+        project,
+        sessions,
+        ongoingTime,
+        currency,
+        currentSession,
+        elapsed,
+        decimalHours,
+        gross,
+        advanceRemaining,
+        finalAmount,
+        hoursExpr,
+    } = data;
+
+    // If --template is provided, try to render the template if it exists
+    if (template) {
+        const templatePath = path.join(dataPath, "templates", `${template}.liquid`);
+        try {
+            // Check if file exists
+            await Deno.stat(templatePath);
+            // Read template
+            const tpl = await Deno.readTextFile(templatePath);
+            const engine = new Liquid();
+            engine.registerFilter("humanReadable", (ms: number) => humanReadable(ms, false));
+            const context = { ...data, now: Date.now() };
+            const html = await engine.parseAndRender(tpl, context);
+            console.log(html);
+            return;
+        } catch (e) {
+            if (e instanceof Deno.errors.NotFound) {
+                scream(`Template '${template}' not found at ${templatePath}`);
+            } else {
+                scream(`Error rendering template: ${e}`);
+            }
+            return;
+        }
+    }
+
+    const money = (amt: string | number) => `${currency}${amt}`;
+
+    if (timeOnly) {
+        return console.log(humanReadable(elapsed, short));
+    }
+
+    console.log(`Project ${heading(project.name)}\n`);
+
+    if (sessions.length === 0) {
+        scream("No sessions exist for the specified project");
+    }
+
+    if (days) {
+        printTimesheet(sessions);
+    } else if (!short) {
+        printLog(sessions);
+    }
+
+    const totalTime = heading(humanReadable(elapsed));
+    const decHours = decimalHours.toFixed(2);
+
+    if (ongoingTime && currentSession) {
+        console.log(`Current session: ${sessionName(currentSession.name, false)}`);
+        console.log(`Started at: ${new Date(currentSession.start).toLocaleString()}`);
+        console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
+    }
+
+    console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
+    console.log(`Gross amount (${decHours} h * ${money(project.rate)}/h): ${money(gross)}`);
+    console.log(`Hours paid in advance: ${project.advance} h`);
+    if (advanceRemaining > 0) console.log("Advance remaining:", humanReadable(advanceRemaining));
+    const amt = heading(money(finalAmount));
+    console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/h = ${amt}`);
+};
+
+const action = async (opts: ESummaryOpts) => {
+    return match(await getProjectId(opts.project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
-            const sessions = [];
-            let time = 0;
-            let ongoingTime = 0;
-
-            const project = (await storage.getProjectById(id)).unwrap();
-            const advance = project.advance || 0;
-
-            for await (const session of storage.getSessions(id)) {
-                sessions.push(session);
-                if (!session.value.end) ongoingTime += Date.now() - session.value.start;
-                else time += session.value.end - session.value.start;
-            }
-
-            if (timeOnly) {
-                return console.log(humanReadable(ongoingTime + time, short));
-            }
-
-            console.log(`Project ${heading(project.name)}\n`);
-
-            if (sessions.length === 0) {
-                scream("No sessions exist for the specified project");
-            }
-
-            const list = sessions.map((entry) => entry.value).sort((a, b) => a.start - b.start);
-            if (days) {
-                printTimesheet(list);
-            } else if (!short) {
-                printLog(list);
-            }
-
-            const curr = await storage.getConfigValue("currency");
-            const money = (amt: string | number) => `${curr}${amt}`;
-
-            const elapsed = ongoingTime + time;
-            const timeHours = elapsed / timeMs({ h: 1 });
-            const totalTime = heading(humanReadable(elapsed));
-            const decHours = timeHours.toFixed(2);
-            const gross = timeHours * project.rate;
-            const hoursExpr = `(${decHours} h - ${advance} h)`;
-
-            if (ongoingTime) {
-                const session = sessions.at(-1);
-                console.log(`Current session: ${sessionName(session?.value.name, false)}`);
-                console.log(`Started at: ${new Date(session?.value.start!).toLocaleString()}`);
-                console.log(`Time spent in current session: ${humanReadable(ongoingTime)}\n`);
-            }
-
-            console.log(`Total time spent: ${totalTime} = ${decHours} h\n`);
-            console.log(`Gross amount (${decHours} h * ${money(project.rate)}/h): ${money(gross.toFixed(2))}`);
-            console.log(`Hours paid in advance: ${advance} h`);
-            const advanceRemaining = timeMs({ h: advance }) - elapsed;
-            if (advanceRemaining > 0) console.log("Advance remaining:", humanReadable(advanceRemaining));
-            const amt = heading(money(((timeHours - advance) * project.rate).toFixed(2)));
-            console.log(`Final amount: ${hoursExpr} * ${money(project.rate)}/h = ${amt}`);
+            const data = await gatherLogData(id);
+            await renderLogData(data, opts);
         },
     });
 };
@@ -85,6 +178,7 @@ export const log = new Command("log")
         "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
     )
     .option("-d --days", "Group hours by day instead of session")
+    .option("--template <name>", "Render using a named HTML template if it exists in your data/templates directory.")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )

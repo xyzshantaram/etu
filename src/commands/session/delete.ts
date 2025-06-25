@@ -29,7 +29,7 @@ const action = async ({ project }: EEditSessionOpts) => {
     });
 };
 
-export const deleteNote = new Command("delete")
+export const deleteSession = new Command("delete")
     .option("-p --project", "id of the project whose session to delete. uses default project if not specified.")
     .description("Delete a session of a project.")
     .action(action);
