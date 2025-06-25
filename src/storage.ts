@@ -1,15 +1,9 @@
-import { join } from "https://deno.land/std@0.204.0/path/join.ts";
-import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
-import { BareNote, Note, Project, scream, Session } from "./utils.ts";
+import * as path from "@std/path";
+import { BareNote, dataPath, Note, Project, Session } from "./utils.ts";
 import { Err, None, Ok, Option, Result, Some } from "@/oxide";
 import { ulid } from "@std/ulid";
 
-const dataDir = dir("data");
-if (!dataDir) scream("Couldn't find your data directory! Bailing.");
-
-const dataPath = join(dataDir!, "etu");
-await Deno.mkdir(dataPath, { recursive: true });
-const kv = await Deno.openKv(join(dataPath, "etu.db"));
+const kv = await Deno.openKv(path.join(dataPath, "etu.db"));
 
 export async function* getSessions(id: string) {
     for await (

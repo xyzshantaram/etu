@@ -1,7 +1,8 @@
-// deno-lint-ignore-file no-explicit-any
 import * as storage from "./storage.ts";
 import { Result } from "@/oxide";
 import { colors } from "@cliffy/ansi/colors";
+import { dir } from "@cross/dir";
+import * as path from "@std/path";
 
 export type Maybe<T> = T | undefined;
 
@@ -139,7 +140,10 @@ export const die = (code: number, msg: string) => {
 };
 
 const error = colors.bold.red;
+
+// deno-lint-ignore no-explicit-any
 export const scream = (...args: any[]) => die(1, error(["ERROR:", ...args].join(" ")));
+// deno-lint-ignore no-explicit-any
 export const exit = (...args: any[]) => die(0, args.join(" "));
 
 export const SELECTED_DATE_FUTURE_ERROR = "Date cannot be in the future";
@@ -150,3 +154,9 @@ export const success = colors.bold.green;
 export const heading = colors.bold;
 export const info = colors.bold.blue;
 export const muted = colors.italic.gray;
+
+const dataDir = await dir("data");
+if (!dataDir) scream("Couldn't find your data directory! Bailing.");
+
+export const dataPath = path.join(dataDir!, "etu");
+await Deno.mkdir(dataPath, { recursive: true });
