@@ -11,12 +11,18 @@ interface ESummaryOpts {
     timeOnly: boolean;
     days: boolean;
     template?: string;
+    json?: boolean;
 }
 
 const action = async (opts: ESummaryOpts) => {
     return match(await getProjectId(opts.project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
+            if (opts.json) {
+                const data = await gatherLogData(id);
+                console.log(JSON.stringify(data, null, 2));
+                return;
+            }
             const data = await gatherLogData(id);
             if (opts.template) {
                 await renderLogLiquid(data, { template: opts.template });
@@ -42,11 +48,12 @@ export const log = new Command("log")
         "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
     )
     .option("-d --days", "Group hours by day instead of session")
+    .option("--json", "Output all project log data as JSON.")
+    .description(
+        "Print the summary (hours worked, total billing) of the project.",
+    )
     .option(
         "--template <name>",
         "Render using a named HTML template if it exists in your data/templates directory.",
-    )
-    .description(
-        "Print the summary (hours worked, total billing) of the project.",
     )
     .action(action);

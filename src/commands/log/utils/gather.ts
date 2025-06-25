@@ -53,7 +53,7 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
     const gross = decimalHours * project.rate;
     const advanceRemaining = (advance * 3600000) - elapsed;
     const finalAmount = (decimalHours - advance) * project.rate;
-    const hoursExpr = `(${decimalHours.toFixed(2)} h - ${advance} h)`;
+    const hoursExpr = `${decimalHours.toFixed(2)} h - ${advance} h`;
     const finalWithExpenses = finalAmount + totalExpenses;
 
     return {

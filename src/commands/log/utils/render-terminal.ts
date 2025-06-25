@@ -147,7 +147,7 @@ export function renderLogTerminal(data: LogData, opts: TerminalRenderOpts) {
     console.log(`Gross amount (${decHours} h * ${money(project.rate)}/h): ${money(gross)}`);
     console.log(`Hours paid in advance: ${project.advance} h`);
     if (advanceRemaining > 0) console.log("Advance remaining:", humanReadable(advanceRemaining));
-    const finalLine = `Final amount: ${hoursExpr} * ${money(project.rate)}/h` +
+    const finalLine = `Final amount: (${hoursExpr}) * ${money(project.rate)}/h` +
         (totalExpenses ? ` + ${money(totalExpenses)} (Expenses)` : "") +
         ` = ${heading(money(finalWithExpenses))}`;
     console.log(finalLine);

@@ -89,7 +89,7 @@
     <li>
       <strong>Final amount:</strong>
       <span class="money">
-        {{ hoursExpr }} * {{ currency }}{{ project.rate }}/h
+        ({{ hoursExpr }}) * {{ currency }}{{ project.rate }}/h
         {% if totalExpenses > 0 %} + {{ currency }}{{ totalExpenses }} (Expenses){% endif %} =
         {{ currency }}{{ finalWithExpenses }}
       </span>
