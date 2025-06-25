@@ -14,8 +14,8 @@ import {
     timeMs,
 } from "../../utils.ts";
 import { getSessionChoices } from "./mod.ts";
-import { Input, Select } from "@/cliffy/prompt";
-import { Table } from "@/cliffy/table";
+import { Input, Select } from "@cliffy/prompt";
+import { Table } from "@cliffy/table";
 import * as storage from "../../storage.ts";
 
 interface EEditSessionOpts {

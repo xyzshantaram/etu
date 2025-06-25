@@ -1,9 +1,9 @@
 import { Command } from "@/commander";
-import { Select } from "@/cliffy/prompt";
+import { Select } from "@cliffy/prompt";
 import { match } from "@/oxide";
 import { getProjectId, scream } from "../../utils.ts";
 import { getSessionChoices } from "./mod.ts";
-import { Confirm } from "@/cliffy/prompt";
+import { Confirm } from "@cliffy/prompt";
 import * as storage from "../../storage.ts";
 
 interface EEditSessionOpts {
@@ -29,7 +29,7 @@ const action = async ({ project }: EEditSessionOpts) => {
     });
 };
 
-export const deleteSession = new Command("delete")
+export const deleteNote = new Command("delete")
     .option("-p --project", "id of the project whose session to delete. uses default project if not specified.")
     .description("Delete a session of a project.")
     .action(action);

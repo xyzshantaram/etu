@@ -2,7 +2,7 @@ import { Command } from "@/commander";
 import { match } from "@/oxide";
 import { getProjectId, heading, scream, success } from "../../utils.ts";
 import * as storage from "../../storage.ts";
-import { Input, Number, Select } from "@/cliffy/prompt";
+import { Input, Number, Select } from "@cliffy/prompt";
 
 interface EEditOpts {
     project: string;

@@ -2,7 +2,7 @@ import { join } from "https://deno.land/std@0.204.0/path/join.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
 import { Project, scream, Session } from "./utils.ts";
 import { Err, None, Ok, Option, Result, Some } from "@/oxide";
-import { ulid } from "@/ulid";
+import { ulid } from "@std/ulid";
 
 const dataDir = dir("data");
 if (!dataDir) scream("Couldn't find your data directory! Bailing.");

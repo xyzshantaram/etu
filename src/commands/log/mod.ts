@@ -1,5 +1,5 @@
 import { Command } from "@/commander";
-import { Table } from "@/cliffy/table";
+import { Table } from "@cliffy/table";
 import * as storage from "../../storage.ts";
 import { match } from "@/oxide";
 import { getProjectId, heading, humanReadable, scream, Session, sessionName, timeMs } from "../../utils.ts";
@@ -39,7 +39,7 @@ const action = async ({ short, project, timeOnly, days }: ESummaryOpts) => {
                 scream("No sessions exist for the specified project");
             }
 
-            const list = sessions.map(entry => entry.value).sort((a, b) => a.start - b.start);
+            const list = sessions.map((entry) => entry.value).sort((a, b) => a.start - b.start);
             if (days) {
                 printTimesheet(list);
             } else if (!short) {
