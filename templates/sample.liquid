@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Project Log Summary: {{ project.name }}</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 2em; border: 2px solid black; }
+    th, td, tr { break-inside: avoid; }
+    th, td { padding: 0.5em; text-align: left; }
+    th { background: black; color: white };
+    .money { font-weight: bold; color: #27ae60; }
+    .warning { color: #e67e22; }
+    .kv-memos { margin-top: 2em; }
+    .expenses-table { margin-bottom: 2em; }
+    h1 { text-align: center; }
+
+    @media screen and (max-aspect-ratio: 1/1) {
+      body {
+        max-width: 60vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>ACME Inc.</h1>
+  <h2>Invoice</h2>
+  <h3>Sessions</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>From</th>
+        <th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% assign idx = 0 %}
+      {% for session in sessions %}
+        {% assign idx = idx | plus: 1 %}
+        <tr>
+          <td>{{ idx }}</td>
+          <td>{{ session.name | default: '(untitled)' }}</td>
+          <td>{{ session.start | divided_by: 1000 | date: '%Y-%m-%d %H:%M' }}</td>
+          <td>
+            {% if session.end %}
+              {{ session.end | minus: session.start | humanReadable }}
+            {% else %}
+              {{ now | minus: session.start | humanReadable }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% assign expenses = notes | where: 'type', 'expense' %}
+  {% if expenses.size > 0 %}
+    <h3>Expenses</h3>
+    <table class="expenses-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Amount</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+          <tr>
+            <td>{{ exp.name }}</td>
+            <td class="money">{{ currency }}{{ exp.cost }}</td>
+            <td>{{ exp.description | default: '' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h3>Summary</h3>
+  <ul>
+    <li><strong>Total time spent:</strong> {{ elapsed | humanReadable }} = {{ decimalHours }} h</li>
+    <li><strong>Gross amount:</strong> <span class="money">{{ currency }}{{ gross }}</span></li>
+    <li><strong>Hours paid in advance:</strong> {{ project.advance }} h</li>
+    {% if advanceRemaining > 0 %}
+      <li class="warning"><strong>Advance remaining:</strong> {{ advanceRemaining | humanReadable }}</li>
+    {% endif %}
+    <li>
+      <strong>Final amount:</strong>
+      <span class="money">
+        {{ hoursExpr }} * {{ currency }}{{ project.rate }}/h
+        {% if totalExpenses > 0 %} + {{ currency }}{{ totalExpenses }} (Expenses){% endif %} =
+        {{ currency }}{{ finalWithExpenses }}
+      </span>
+    </li>
+  </ul>
+
+  {% if currentSession %}
+    <h2>Current Session</h2>
+    <ul>
+      <li><strong>Name:</strong> {{ currentSession.name | default: '(untitled)' }}</li>
+      <li><strong>Started at:</strong> {{ currentSession.start | divided_by: 1000 | date: '%Y-%m-%d %H:%M' }}</li>
+      <li><strong>Time spent:</strong> {{ ongoingTime | humanReadable }}</li>
+    </ul>
+  {% endif %}
+
+  {% assign kv_memos = notes | where: 'type', 'kv' %}
+  {% if kv_memos.size > 0 %}
+    <div class="kv-memos">
+      <h3>Memos</h3>
+      <ul>
+        {% for memo in kv_memos %}
+          <li><strong>{{ memo.name }}: </strong>{{ memo.description | default: '' }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</body>
+</html>

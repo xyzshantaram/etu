@@ -11,7 +11,7 @@ interface AddMemoOpts {
     project?: string;
 }
 
-const action = async ({ name, expense, project }: AddMemoOpts) => {
+const action = async (name: string, { expense, project }: AddMemoOpts) => {
     return await match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (proj: string) => {
