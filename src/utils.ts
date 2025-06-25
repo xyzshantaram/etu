@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import * as storage from "./storage.ts";
 import { Result } from "@/oxide";
-import { colors } from "@/cliffy/ansi";
+import { colors } from "@cliffy/ansi/colors";
 
 export type Maybe<T> = T | undefined;
 
@@ -17,6 +17,15 @@ export interface Session {
     start: number;
     end?: number;
 }
+
+export type BareNote =
+    & { name: string; description?: string }
+    & (
+        | { type: "kv" }
+        | { type: "expense"; cost: number }
+    );
+
+export type Note = { id: string } & BareNote;
 
 export const slugify = (str: string) => {
     return String(str)

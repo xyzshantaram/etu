@@ -1,6 +1,6 @@
 import { join } from "https://deno.land/std@0.204.0/path/join.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
-import { Project, scream, Session } from "./utils.ts";
+import { BareNote, Note, Project, scream, Session } from "./utils.ts";
 import { Err, None, Ok, Option, Result, Some } from "@/oxide";
 import { ulid } from "@std/ulid";
 
@@ -119,4 +119,23 @@ export const deleteSession = async (id: string, toDelete: string) => {
 
 export const editSession = async (proj: string, ulid: string, body: Session) => {
     await kv.set(["projects", proj, "sessions", ulid], body);
+};
+
+export const getProjectNotes = async (proj: string) => {
+    const notes: Note[] = [];
+    for await (const note of kv.list<Note>({ prefix: ["projects", proj, "notes"] })) {
+        notes.push(note.value);
+    }
+    return notes;
+};
+
+export const deleteNote = async (proj: string, id: string) => {
+    await kv.delete(["projects", proj, "notes", id]);
+};
+
+export const createNote = async (proj: string, note: BareNote) => {
+    const id = ulid();
+    const itm: Note = { ...note, id };
+    await kv.set(["projects", proj, "notes", id], itm);
+    return itm;
 };
