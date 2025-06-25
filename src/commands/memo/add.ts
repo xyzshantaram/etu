@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { Input } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { BareNote, getProjectId, scream } from "../../utils.ts";
+import { BareMemo, getProjectId, scream } from "../../utils.ts";
 import { promptForCost } from "./mod.ts";
 import * as storage from "../../storage.ts";
 
@@ -15,10 +15,10 @@ const action = async ({ name, expense, project }: AddMemoOpts) => {
     return await match(await getProjectId(project), {
         Err: (msg: string) => scream(msg),
         Ok: async (proj: string) => {
-            let note: BareNote = { name, type: "kv" };
+            let note: BareMemo = { name, type: "kv" };
 
             note.description = await Input.prompt({
-                message: "Note description (optional, leave blank for none):",
+                message: "Memo description (optional, leave blank for none):",
             });
 
             if (expense) {

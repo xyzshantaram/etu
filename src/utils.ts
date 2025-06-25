@@ -19,14 +19,14 @@ export interface Session {
     end?: number;
 }
 
-export type BareNote =
+export type BareMemo =
     & { name: string; description?: string }
     & (
         | { type: "kv" }
         | { type: "expense"; cost: number }
     );
 
-export type Note = { id: string } & BareNote;
+export type Memo = { id: string } & BareMemo;
 
 export const slugify = (str: string) => {
     return String(str)

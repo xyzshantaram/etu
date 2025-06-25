@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { Confirm, Input, Select, SelectOption } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { BareNote, getProjectId, Note, scream } from "../../utils.ts";
+import { BareMemo, getProjectId, Memo, scream } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 import { promptForCost } from "./mod.ts";
 
@@ -15,7 +15,7 @@ const action = async ({ project }: EditMemoOpts) => {
         Ok: async (proj: string) => {
             const notes = await storage.getProjectNotes(proj);
             if (!notes.length) return console.log("No memos to edit.");
-            const noteOpts: SelectOption<Note>[] = notes.map((itm) => ({
+            const noteOpts: SelectOption<Memo>[] = notes.map((itm) => ({
                 value: itm,
                 name: itm.name,
             }));
@@ -45,7 +45,7 @@ const action = async ({ project }: EditMemoOpts) => {
                 options: actionOpts,
             });
 
-            let updated: BareNote = { name: toEdit.name, type: toEdit.type } as BareNote;
+            let updated: BareMemo = { name: toEdit.name, type: toEdit.type } as BareMemo;
 
             switch (update) {
                 case "desc": {

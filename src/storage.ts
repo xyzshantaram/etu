@@ -1,5 +1,5 @@
 import * as path from "@std/path";
-import { BareNote, dataPath, Note, Project, Session } from "./utils.ts";
+import { BareMemo, dataPath, Memo, Project, Session } from "./utils.ts";
 import { Err, None, Ok, Option, Result, Some } from "@/oxide";
 import { ulid } from "@std/ulid";
 
@@ -138,8 +138,8 @@ export const editSession = async (proj: string, ulid: string, body: Session) => 
 
 export const getProjectNotes = async (proj: string) => {
     const kv = await getKv();
-    const notes: Note[] = [];
-    for await (const note of kv.list<Note>({ prefix: ["projects", proj, "notes"] })) {
+    const notes: Memo[] = [];
+    for await (const note of kv.list<Memo>({ prefix: ["projects", proj, "notes"] })) {
         notes.push(note.value);
     }
     return notes;
@@ -150,10 +150,10 @@ export const deleteNote = async (proj: string, id: string) => {
     await kv.delete(["projects", proj, "notes", id]);
 };
 
-export const createNote = async (proj: string, note: BareNote) => {
+export const createNote = async (proj: string, note: BareMemo) => {
     const kv = await getKv();
     const id = ulid();
-    const itm: Note = { ...note, id };
+    const itm: Memo = { ...note, id };
     await kv.set(["projects", proj, "notes", id], itm);
     return itm;
 };

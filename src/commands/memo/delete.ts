@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { Select, SelectOption } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { getProjectId, Note, scream } from "../../utils.ts";
+import { getProjectId, Memo, scream } from "../../utils.ts";
 import { Confirm } from "@cliffy/prompt";
 import * as storage from "../../storage.ts";
 
@@ -14,7 +14,7 @@ const action = async ({ project }: EEditSessionOpts) => {
         Err: (msg: string) => scream(msg),
         Ok: async (proj: string) => {
             const notes = await storage.getProjectNotes(proj);
-            const options: SelectOption<Note>[] = notes.map((itm) => ({
+            const options: SelectOption<Memo>[] = notes.map((itm) => ({
                 value: itm,
                 name: itm.name,
             }));
