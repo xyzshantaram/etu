@@ -55,7 +55,7 @@
     </tbody>
   </table>
 
-  {% assign expenses = notes | where: 'type', 'expense' %}
+  {% assign expenses = memos | where: 'type', 'expense' %}
   {% if expenses.size > 0 %}
     <h3>Expenses</h3>
     <table class="expenses-table">
@@ -105,12 +105,12 @@
     </ul>
   {% endif %}
 
-  {% assign kv_memos = notes | where: 'type', 'kv' %}
-  {% if kv_memos.size > 0 %}
+  {% assign notes = memos | where: 'type', 'kv' %}
+  {% if notes.size > 0 %}
     <div class="kv-memos">
       <h3>Memos</h3>
       <ul>
-        {% for memo in kv_memos %}
+        {% for memo in notes %}
           <li><strong>{{ memo.name }}: </strong>{{ memo.description | default: '' }}</li>
         {% endfor %}
       </ul>
