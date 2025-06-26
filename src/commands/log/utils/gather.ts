@@ -1,6 +1,11 @@
 import * as storage from "../../../storage.ts";
 import { Memo, Session } from "../../../utils.ts";
 
+export interface SessionsByDay {
+    date: number; // ms since epoch, local midnight
+    millis: number;
+}
+
 interface LogData {
     project: {
         id: string;
@@ -19,9 +24,42 @@ interface LogData {
     advanceRemaining: number;
     finalAmount: number;
     hoursExpr: string;
-    notes: Memo[];
+    memos: Memo[];
     totalExpenses: number;
     finalWithExpenses: number;
+    sessionsByDay: SessionsByDay[];
+}
+
+// Buckets sessions into per-day millis worked, ISO date keys.
+function groupSessionsByDay(sessions: Session[]): SessionsByDay[] {
+    const buckets: Map<string, number> = new Map();
+    for (const session of sessions) {
+        const start = new Date(session.start);
+        const end = new Date(session.end ?? Date.now());
+        const current = new Date(start);
+        current.setHours(0, 0, 0, 0);
+        const endDay = new Date(end);
+        endDay.setHours(0, 0, 0, 0);
+        while (current <= endDay) {
+            const dayStart = +current;
+            const dayEnd = new Date(current);
+            dayEnd.setHours(23, 59, 59, 999);
+            const sessionStart = Math.max(session.start, dayStart);
+            const sessionEnd = Math.min(session.end ?? Date.now(), +dayEnd);
+            const key = current.toISOString().slice(0, 10);
+            const prev = buckets.get(key) ?? 0;
+            buckets.set(key, prev + Math.max(0, sessionEnd - sessionStart));
+            current.setDate(current.getDate() + 1);
+        }
+    }
+    return Array.from(buckets.entries())
+        .map(([date, millis]) => {
+            // date is ISO string. Convert to ms (local timezone, midnight)
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            return { date: d.getTime(), millis };
+        })
+        .sort((a, b) => a.date - b.date);
 }
 
 export const gatherLogData = async (projectId: string): Promise<LogData> => {
@@ -42,10 +80,10 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
     const currentSession = sessions.find((s) => !s.value.end);
 
     // Gather notes/memos for this project
-    const notes: Memo[] = await storage.getProjectNotes(projectId);
+    const memos: Memo[] = await storage.getProjectNotes(projectId);
 
     // Expense-related calculations
-    const totalExpenses = notes.filter((n) => n.type === "expense").reduce((sum, n) => sum + (n.cost || 0), 0);
+    const totalExpenses = memos.filter((n) => n.type === "expense").reduce((sum, n) => sum + (n.cost || 0), 0);
 
     // Precompute values for templates and view functions
     const elapsed = ongoingTime + time;
@@ -56,6 +94,9 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
     const hoursExpr = `${decimalHours.toFixed(2)} h - ${advance} h`;
     const finalWithExpenses = finalAmount + totalExpenses;
 
+    const sortedSessions = sessions.map((s) => s.value).sort((a, b) => a.start - b.start);
+    const sessionsByDay = groupSessionsByDay(sortedSessions);
+
     return {
         project: {
             id: projectId,
@@ -63,7 +104,7 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
             rate: project.rate,
             advance,
         },
-        sessions: sessions.map((s) => s.value).sort((a, b) => a.start - b.start),
+        sessions: sortedSessions,
         time,
         ongoingTime,
         currency,
@@ -74,9 +115,10 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
         advanceRemaining,
         finalAmount: Number(finalAmount.toFixed(2)),
         hoursExpr,
-        notes,
+        memos,
         totalExpenses: Number(totalExpenses.toFixed(2)),
         finalWithExpenses: Number(finalWithExpenses.toFixed(2)),
+        sessionsByDay,
     };
 };
 
