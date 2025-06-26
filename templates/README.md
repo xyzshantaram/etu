@@ -56,11 +56,11 @@ Array of session objects, **sorted by start time asc**. Each session:
 ### `hoursExpr`
 - Text showing calculation, e.g. `"(12.33 h - 10 h)"`
 
-### `notes`
-Array of memo and expense objects. Each:
+### `memos`
+Array of note and expense objects. Each:
 - `.name`: string
-- `.type`: "kv" (memo/info), or "expense"
-- `.description`: string (kv memos) or detail/optional (expense)
+- `.type`: "kv" (note), or "expense"
+- `.description`: string (notes) or detail/optional (expense)
 - `.cost`: number (only for expenses)
 
 ### `totalExpenses`
