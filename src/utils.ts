@@ -142,7 +142,7 @@ export const die = (code: number, msg: string) => {
 const error = colors.bold.red;
 
 // deno-lint-ignore no-explicit-any
-export const scream = (...args: any[]) => die(1, error(["ERROR:", ...args].join(" ")));
+export const scream = (...args: any[]) => die(1, error("ERROR:") + ` ${args.join(" ")}`);
 // deno-lint-ignore no-explicit-any
 export const exit = (...args: any[]) => die(0, args.join(" "));
 
