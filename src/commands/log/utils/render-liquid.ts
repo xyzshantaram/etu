@@ -19,7 +19,11 @@ export async function renderLogLiquid(data: LogData, { template }: LiquidRenderO
         console.log(html);
     } catch (e) {
         if (e instanceof Deno.errors.NotFound) {
-            scream(`Template '${template}' not found at ${templatePath}`);
+            scream(
+                `A template file with name '${template}.liquid' could not be found in ${
+                    path.join(dataPath, "templates")
+                }. Please make sure it is present and re-run etu log.`,
+            );
         } else {
             scream(`Error rendering template: ${e}`);
         }
