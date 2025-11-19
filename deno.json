@@ -1,6 +1,7 @@
 {
   "imports": {
     "@cross/dir": "jsr:@cross/dir@^1.1.0",
+    "@myriaddreamin/typst-ts-node-compiler": "npm:@myriaddreamin/typst-ts-node-compiler@^0.7.0-rc1",
     "@std/path": "jsr:@std/path@^1.1.0",
     "commander": "npm:commander@12.0.0",
     "@/oxide": "npm:oxide.ts@1.1.0",
@@ -11,8 +12,8 @@
     "liquidjs": "npm:liquidjs@^10.21.1"
   },
   "tasks": {
-    "run": "deno run --unstable-kv --allow-env --allow-read --allow-write src/etu.ts",
-    "build": "deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write src/etu.ts"
+    "run": "deno run --unstable-kv --allow-env --allow-read --allow-write --allow-ffi src/etu.ts",
+    "build": "deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write --allow-ffi src/etu.ts"
   },
   "fmt": {
     "indentWidth": 4,
