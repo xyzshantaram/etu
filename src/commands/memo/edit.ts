@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { Confirm, Input, Select, SelectOption } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { BareMemo, getProjectId, Memo, scream } from "../../utils.ts";
+import { BareMemo, getProjectId, Memo, scream, success } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 import { promptForCost } from "./mod.ts";
 
@@ -49,13 +49,19 @@ const action = async ({ project }: EditMemoOpts) => {
             });
 
             let updated: BareMemo = { name: toEdit.name, type: toEdit.type } as BareMemo;
+            if (toEdit.description) {
+                updated.description = toEdit.description;
+            }
+            if (toEdit.type === "expense" && "cost" in toEdit) {
+                updated = { ...updated, type: "expense", cost: toEdit.cost };
+            }
 
             switch (update) {
                 case "desc": {
                     const desc = await Input.prompt({
                         message: `New description (leave blank to keep current).`,
                     });
-                    updated = { ...updated, type: "kv", description: desc || toEdit.description };
+                    updated.description = desc || toEdit.description;
                     break;
                 }
                 case "name": {
