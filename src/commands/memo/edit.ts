@@ -31,6 +31,9 @@ const action = async ({ project }: EditMemoOpts) => {
             }, {
                 value: "name",
                 name: "Change memo name",
+            }, {
+                value: "type",
+                name: "Change memo type (note/expense)",
             }];
 
             if (toEdit.type === "expense") {
@@ -58,6 +61,39 @@ const action = async ({ project }: EditMemoOpts) => {
                 case "name": {
                     const name = await Input.prompt({ message: `New name (leave blank to keep '${toEdit.name}'):` });
                     updated.name = name || toEdit.name;
+                    break;
+                }
+                case "type": {
+                    const newType = await Select.prompt({
+                        message: "Select new memo type:",
+                        options: [
+                            { value: "kv", name: "Note" },
+                            { value: "expense", name: "Expense" },
+                        ],
+                    });
+
+                    if (newType === toEdit.type) {
+                        console.log("Memo type is already that.");
+                        return;
+                    }
+
+                    if (newType === "expense") {
+                        // Transitioning from note to expense - require amount
+                        const cost = await promptForCost();
+                        updated = { name: toEdit.name, type: "expense", cost } as BareMemo;
+                        if (toEdit.description) {
+                            updated.description = toEdit.description;
+                        }
+                    } else {
+                        // Transitioning from expense to note - remove cost
+                        if (toEdit.type === "expense" && "cost" in toEdit) {
+                            console.log(`${success("Removing expense amount:")} ${toEdit.cost}`);
+                        }
+                        updated = { name: toEdit.name, type: "kv" } as BareMemo;
+                        if (toEdit.description) {
+                            updated.description = toEdit.description;
+                        }
+                    }
                     break;
                 }
                 case "cost": {
