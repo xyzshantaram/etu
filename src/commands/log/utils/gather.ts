@@ -22,7 +22,7 @@ interface LogData {
     time: number;
     ongoingTime: number;
     currency: string;
-    currentSession?: EnrichedSession;
+    currentSession: EnrichedSession | null;
     elapsed: number;
     decimalHours: number;
     gross: number;
@@ -139,7 +139,7 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
         time,
         ongoingTime,
         currency,
-        currentSession: enrichedCurrent,
+        currentSession: enrichedCurrent ?? null,
         elapsed,
         decimalHours: Number(decimalHours.toFixed(2)),
         gross: Number(gross.toFixed(2)),

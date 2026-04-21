@@ -1,12 +1,12 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import { getProjectId, scream, success } from "@/utils.ts";
+import { getProjectId, scream, success, info } from "@/utils.ts";
 import { gatherLogData } from "./utils/gather.ts";
 import { renderLogTerminal } from "./utils/render-terminal.ts";
 import { findTemplate } from "./utils/template-discovery.ts";
 import { LiquidRenderer } from "./renderers/liquid.ts";
 import { TypstRenderer } from "./renderers/typst.ts";
-import { resolveOutputPath, writeOutput } from "./utils/output.ts";
+import { resolveOutputPath, writeOutput, openWithSystemViewer } from "./utils/output.ts";
 import type { OutputFormat, TemplateRenderer } from "./renderers/types.ts";
 import * as storage from "@/storage.ts";
 
@@ -20,7 +20,6 @@ interface ESummaryOpts {
     format?: string;
     output?: string;
     outputDir?: string;
-    currentDir?: boolean;
 }
 
 const action = async (opts: ESummaryOpts) => {
@@ -74,16 +73,17 @@ const action = async (opts: ESummaryOpts) => {
                         {
                             outputPath: opts.output,
                             outputDir: opts.outputDir,
-                            currentDir: opts.currentDir,
                         },
                         project.slug,
                         format,
                     );
 
-                    const resolvedPath = outputPath ?? scream("Failed to determine output path.");
+                    await writeOutput(outputPath, result.content);
+                    console.log(success(`Output saved to:`), outputPath);
 
-                    await writeOutput(resolvedPath, result.content);
-                    console.log(success(`Output written to: ${resolvedPath}`));
+                    if (format === "pdf") {
+                        await openWithSystemViewer(outputPath);
+                    }
                 }
             } else {
                 renderLogTerminal(data, {
@@ -122,14 +122,10 @@ export const log = new Command("log")
     )
     .option(
         "-o, --output <path>",
-        "Output file path. Skips prompts and saves directly to this location.",
+        "Output file path. Saves directly to this location.",
     )
     .option(
         "--output-dir <path>",
-        "Output directory. Uses this instead of the configured output-path.",
-    )
-    .option(
-        "--current-dir",
-        "Save output in current directory without prompting.",
+        "Output directory. Defaults to Documents/etu or the configured output-path.",
     )
     .action(action);

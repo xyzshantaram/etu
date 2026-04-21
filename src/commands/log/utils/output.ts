@@ -1,9 +1,7 @@
 import * as path from "@std/path";
-import { Select } from "@cliffy/prompt";
 import * as storage from "@/storage.ts";
-import { getDocumentsDir } from "@/utils.ts";
+import { getDocumentsDir, info } from "@/utils.ts";
 import type { OutputFormat } from "@/commands/log/renderers/types.ts";
-import { scream } from "@/utils.ts";
 
 export async function getOutputDir(): Promise<string> {
     const configPath = await storage.getConfigValue("output-path");
@@ -24,39 +22,15 @@ export function generateFilename(projectSlug: string, format: OutputFormat): str
 }
 
 export async function resolveOutputPath(
-    options: { outputPath?: string; outputDir?: string; currentDir?: boolean },
+    options: { outputPath?: string; outputDir?: string },
     projectSlug: string,
     format: OutputFormat,
-): Promise<string | null> {
+): Promise<string> {
     if (options.outputPath) return options.outputPath;
-    if (format === "html" && !options.outputDir && !options.currentDir) return null;
 
-    let directory: string;
-    if (options.currentDir) {
-        directory = Deno.cwd();
-    } else if (options.outputDir) {
-        directory = options.outputDir;
-    } else {
-        directory = await promptForOutputLocation();
-    }
-
+    const directory = options.outputDir ?? await getOutputDir();
     await Deno.mkdir(directory, { recursive: true });
     return path.join(directory, generateFilename(projectSlug, format));
-}
-
-async function promptForOutputLocation(): Promise<string> {
-    const outputDir = await getOutputDir();
-    const currentDir = Deno.cwd();
-
-    const choice = await Select.prompt({
-        message: "Where would you like to save the output?",
-        options: [
-            { name: `Output directory (${outputDir})`, value: "output-dir" },
-            { name: `Current directory (${currentDir})`, value: "current-dir" },
-        ],
-    });
-
-    return choice === "output-dir" ? outputDir : currentDir;
 }
 
 export async function writeOutput(filepath: string, content: string | Uint8Array): Promise<void> {
@@ -70,5 +44,16 @@ export async function writeOutput(filepath: string, content: string | Uint8Array
         throw new Error(
             `Failed to write output file: ${error instanceof Error ? error.message : String(error)}`,
         );
+    }
+}
+
+export async function openWithSystemViewer(filepath: string): Promise<void> {
+    const cmd = Deno.build.os === "darwin" ? "open" : Deno.build.os === "windows" ? "explorer" : "xdg-open";
+
+    try {
+        await new Deno.Command(cmd, { args: [filepath] }).spawn().output();
+        return;
+    } catch {
+        console.log(info("Tip:"), `Open the file manually: ${filepath}`);
     }
 }

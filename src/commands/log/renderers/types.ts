@@ -12,7 +12,6 @@ export interface RenderResult {
     content: string | Uint8Array;
     format: OutputFormat;
     stdout: boolean;
-    suggestedFilename?: string;
 }
 
 export interface TemplateRenderer {
