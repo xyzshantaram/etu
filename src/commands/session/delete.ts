@@ -1,10 +1,10 @@
 import { Command } from "commander";
 import { Select } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { getProjectId, scream } from "../../utils.ts";
+import { getProjectId, scream } from "@/utils.ts";
 import { getSessionChoices } from "./mod.ts";
 import { Confirm } from "@cliffy/prompt";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 
 interface EEditSessionOpts {
     project: string;

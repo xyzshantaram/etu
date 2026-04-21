@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, scream, success } from "../../utils.ts";
-import * as storage from "../../storage.ts";
+import { getProjectId, heading, humanReadable, scream, success } from "@/utils.ts";
+import * as storage from "@/storage.ts";
 
 interface EStatusOpts {
     short: boolean;

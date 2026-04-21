@@ -1,9 +1,14 @@
-import * as storage from "../../../storage.ts";
-import { Memo, Session } from "../../../utils.ts";
+import * as storage from "@/storage.ts";
+import { Memo, Session } from "@/utils.ts";
 
 export interface SessionsByDay {
     date: number; // ms since epoch, local midnight
     millis: number;
+}
+
+export interface EnrichedSession extends Session {
+    startFormatted: string;
+    endFormatted: string | null;
 }
 
 interface LogData {
@@ -13,11 +18,11 @@ interface LogData {
         rate: number;
         advance: number;
     };
-    sessions: Session[];
+    sessions: EnrichedSession[];
     time: number;
     ongoingTime: number;
     currency: string;
-    currentSession?: Session;
+    currentSession?: EnrichedSession;
     elapsed: number;
     decimalHours: number;
     gross: number;
@@ -28,38 +33,56 @@ interface LogData {
     totalExpenses: number;
     finalWithExpenses: number;
     sessionsByDay: SessionsByDay[];
+    invoiceDate: string;
+    dueDate: string;
 }
 
-// Buckets sessions into per-day millis worked, ISO date keys.
+const MS_PER_DAY = 86_400_000;
+
+const fmtLocal = (ms: number) => {
+    const d = new Date(ms);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const localDateKey = (d: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 function groupSessionsByDay(sessions: Session[]): SessionsByDay[] {
-    const buckets: Map<string, number> = new Map();
+    const buckets = new Map<string, { dateMs: number; millis: number }>();
     for (const session of sessions) {
         const start = new Date(session.start);
         const end = new Date(session.end ?? Date.now());
-        const current = new Date(start);
-        current.setHours(0, 0, 0, 0);
-        const endDay = new Date(end);
-        endDay.setHours(0, 0, 0, 0);
+        const current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
         while (current <= endDay) {
-            const dayStart = +current;
-            const dayEnd = new Date(current);
-            dayEnd.setHours(23, 59, 59, 999);
+            const dayStart = current.getTime();
+            const dayEnd = dayStart + MS_PER_DAY - 1;
             const sessionStart = Math.max(session.start, dayStart);
-            const sessionEnd = Math.min(session.end ?? Date.now(), +dayEnd);
-            const key = current.toISOString().slice(0, 10);
-            const prev = buckets.get(key) ?? 0;
-            buckets.set(key, prev + Math.max(0, sessionEnd - sessionStart));
+            const sessionEnd = Math.min(session.end ?? Date.now(), dayEnd);
+            const key = localDateKey(current);
+            const prev = buckets.get(key)?.millis ?? 0;
+            buckets.set(key, {
+                dateMs: dayStart,
+                // Cap at 24 hours to prevent overlapping sessions or bad data from inflating totals
+                millis: Math.min(MS_PER_DAY, prev + Math.max(0, sessionEnd - sessionStart)),
+            });
             current.setDate(current.getDate() + 1);
         }
     }
     return Array.from(buckets.entries())
-        .map(([date, millis]) => {
-            // date is ISO string. Convert to ms (local timezone, midnight)
-            const d = new Date(date);
-            d.setHours(0, 0, 0, 0);
-            return { date: d.getTime(), millis };
-        })
+        .map(([_, v]) => ({ date: v.dateMs, millis: v.millis }))
         .sort((a, b) => a.date - b.date);
+}
+
+function enrichSession(session: Session): EnrichedSession {
+    return {
+        ...session,
+        startFormatted: fmtLocal(session.start),
+        endFormatted: session.end ? fmtLocal(session.end) : null,
+    };
 }
 
 export const gatherLogData = async (projectId: string): Promise<LogData> => {
@@ -96,6 +119,14 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
 
     const sortedSessions = sessions.map((s) => s.value).sort((a, b) => a.start - b.start);
     const sessionsByDay = groupSessionsByDay(sortedSessions);
+    const enrichedSessions = sortedSessions.map(enrichSession);
+    const enrichedCurrent = currentSession ? enrichSession(currentSession.value) : undefined;
+
+    const now = new Date();
+    const due = new Date(now);
+    due.setDate(due.getDate() + 30);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
     return {
         project: {
@@ -104,11 +135,11 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
             rate: project.rate,
             advance,
         },
-        sessions: sortedSessions,
+        sessions: enrichedSessions,
         time,
         ongoingTime,
         currency,
-        currentSession: currentSession?.value,
+        currentSession: enrichedCurrent,
         elapsed,
         decimalHours: Number(decimalHours.toFixed(2)),
         gross: Number(gross.toFixed(2)),
@@ -119,6 +150,8 @@ export const gatherLogData = async (projectId: string): Promise<LogData> => {
         totalExpenses: Number(totalExpenses.toFixed(2)),
         finalWithExpenses: Number(finalWithExpenses.toFixed(2)),
         sessionsByDay,
+        invoiceDate: fmtDate(now),
+        dueDate: fmtDate(due),
     };
 };
 

@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import { Select, SelectOption } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { getProjectId, Memo, scream } from "../../utils.ts";
+import { getProjectId, Memo, scream } from "@/utils.ts";
 import { Confirm } from "@cliffy/prompt";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 
 interface EEditSessionOpts {
     project: string;

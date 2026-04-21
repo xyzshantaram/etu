@@ -1,15 +1,6 @@
 // Sample Typst template for etu log reports
-// This template demonstrates how to use project data in Typst
-//
-#set page(margin: 2cm)
-#set text(font: "Literata", size: 11pt)
-
-// Parse the single context object containing all data
-// Note: json.decode() is used for sys.inputs (string data)
-// The json() function is for reading JSON files directly
 #let ctx = json.decode(sys.inputs.ctx)
 
-// Extract commonly used values for convenience
 #let project = ctx.project
 #let sessions = ctx.sessions
 #let memos = ctx.memos
@@ -24,21 +15,18 @@
 #let finalWithExpenses = ctx.finalWithExpenses
 #let currentSession = ctx.currentSession
 #let ongoingTime = ctx.ongoingTime
-#let now = ctx.now
+#let invoiceDate = ctx.invoiceDate
+#let dueDate = ctx.dueDate
 
-// Configuration: Set to false to hide invoice metadata
 #let showInvoiceMeta = true
 
-// Filter expenses early for validation
 #let expenses = memos.filter(m => m.type == "expense")
 #let kvMemos = memos.filter(m => m.type == "kv")
 
-// Validate that we have at least something to show
 #if sessions.len() == 0 and expenses.len() == 0 and kvMemos.len() == 0 {
   panic("No sessions, expenses, or memos found. Cannot generate invoice.")
 }
 
-// Helper function to format milliseconds to human-readable time
 #let formatTime(ms) = {
   let seconds = calc.floor(ms / 1000)
   let minutes = calc.floor(seconds / 60)
@@ -63,31 +51,22 @@
     result.push(str(seconds) + " second" + if seconds != 1 { "s" } else { "" })
   }
 
-  if result.len() == 0 {
-    return "0 seconds"
-  }
-
-  if result.len() == 1 {
-    return result.at(0)
-  }
+  if result.len() == 0 { return "0 seconds" }
+  if result.len() == 1 { return result.at(0) }
 
   let joined = result.slice(0, -1).join(", ")
   joined + " and " + result.last()
 }
 
-// Document setup
 #set document(title: "Invoice: " + project.name)
 
-// Title
 #align(center)[
   #text(size: 24pt, weight: "bold")[INVOICE]
 ]
 
 #v(1em)
 
-// Company Information
 #text(weight: "bold")[ACME Inc.]
-// Optional address - comment out or remove if not needed
 #linebreak()
 123 Business Street
 #linebreak()
@@ -101,7 +80,6 @@ contact\@acme.com
 #line(length: 100%, stroke: 2pt)
 #v(0.5em)
 
-// Bill To and Invoice Metadata
 #grid(
   columns: (1fr, 1fr),
   gutter: 1em,
@@ -109,7 +87,6 @@ contact\@acme.com
     #text(weight: "bold")[Bill To:]
     #linebreak()
     Client Name
-    // Optional address - comment out or remove if not needed
     #linebreak()
     456 Client Avenue
     #linebreak()
@@ -117,11 +94,10 @@ contact\@acme.com
   ],
   if showInvoiceMeta [
     #align(right)[
-      #text(weight: "bold")[Date:] #datetime.today().display("[year]-[month]-[day]")
+      #text(weight: "bold")[Date:] #invoiceDate
       #linebreak()
-      #text(weight: "bold")[Due Date:] #datetime.today().display("[year]-[month]-[day]")
+      #text(weight: "bold")[Due Date:] #dueDate
       #linebreak()
-      // Optional invoice ID - comment out if not needed
       #text(weight: "bold")[Invoice \#:] INV-2024-001
     ]
   ],
@@ -131,19 +107,13 @@ contact\@acme.com
 #line(length: 100%, stroke: 2pt)
 #v(1em)
 
-// Sessions table - only show if there are sessions
 #if sessions.len() > 0 [
   = Sessions
 
   #table(
     columns: (auto, 1fr, auto, auto),
     inset: 0.5em,
-    stroke: (x, y) => (
-      top: if y == 0 { 0pt } else { 0pt },
-      bottom: if y == 0 { 0pt } else { 0pt },
-      left: 0pt,
-      right: 0pt,
-    ),
+    stroke: none,
     align: (center, left, left, left),
     fill: (x, y) => if y == 0 { black } else { none },
     [#text(fill: white, weight: "bold")[\#]],
@@ -161,7 +131,7 @@ contact\@acme.com
           if session.end != none {
             formatTime(session.end - session.start)
           } else {
-            formatTime(now - session.start)
+            formatTime(ctx.now - session.start)
           },
         )
       })
@@ -176,12 +146,7 @@ contact\@acme.com
   #table(
     columns: (1fr, auto, 2fr),
     inset: 0.5em,
-    stroke: (x, y) => (
-      top: 0pt,
-      bottom: 0pt,
-      left: 0pt,
-      right: 0pt,
-    ),
+    stroke: none,
     align: (left, left, left),
     fill: (x, y) => if y == 0 { black } else { none },
     [#text(fill: white, weight: "bold")[Name]],
@@ -202,19 +167,13 @@ contact\@acme.com
 
 #v(1em)
 
-// Amount Due - only show if there are sessions or expenses
 #if sessions.len() > 0 or expenses.len() > 0 [
   = Amount Due
 
   #table(
     columns: (1fr, auto),
     inset: 0.75em,
-    stroke: (x, y) => (
-      top: if y == sessions.len() { 2pt } else { 0pt },
-      bottom: 0pt,
-      left: 0pt,
-      right: 0pt,
-    ),
+    stroke: none,
     align: (left, left),
     ..if sessions.len() > 0 {
       (
@@ -236,16 +195,14 @@ contact\@acme.com
     ..if sessions.len() > 0 {
       (
         [*Hours paid in advance*],
-        [#str(project.advance) hours \(#currency #(calc.floor(project.rate * decimal(project.advance)))\)],
+        [#str(project.advance) hours \( #currency#(calc.floor(project.rate * decimal(project.advance))) )],
       )
     } else {
       ()
     },
     table.hline(stroke: 2pt),
     [*Amount Payable*],
-    [#text(size: 1.2em, fill: rgb("#27ae60"), weight: "bold")[#currency#str(if sessions.len() > 0 {
-        finalWithExpenses
-      } else { totalExpenses })]],
+    [#text(size: 1.2em, fill: rgb("#27ae60"), weight: "bold")[#currency#str(if sessions.len() > 0 { finalWithExpenses } else { totalExpenses })]],
   )
 
   #if advanceRemaining > 0 [
@@ -253,18 +210,12 @@ contact\@acme.com
     #text(fill: rgb("#e67e22"))[*Note:* Advance remaining: #formatTime(advanceRemaining)]
   ]
 ] else if kvMemos.len() > 0 [
-  // Only memos, no sessions or expenses - show a bill with $0.00
   = Amount Due
 
   #table(
     columns: (1fr, auto),
     inset: 0.5em,
-    stroke: (x, y) => (
-      top: 0pt,
-      bottom: 0pt,
-      left: 0pt,
-      right: 0pt,
-    ),
+    stroke: none,
     align: (left, left),
     table.hline(stroke: 2pt),
     [*Amount Payable:*], [#text(size: 1.2em, fill: rgb("#27ae60"), weight: "bold")[#currency#str(0.00)]],
@@ -274,7 +225,6 @@ contact\@acme.com
 #v(1em)
 #line(length: 100%, stroke: 1pt + gray)
 
-// Payment Terms
 = Payment Terms
 
 Payment is due within 30 days of invoice date.
@@ -286,7 +236,6 @@ Please make payment via:
 
 Thank you for your business!
 
-// Current session if exists
 #if currentSession != none [
   #v(1em)
   = Current Session
@@ -295,9 +244,6 @@ Thank you for your business!
   - *Started at:* #currentSession.startFormatted
   - *Time spent:* #formatTime(ongoingTime)
 ]
-
-// Key-value memos
-#let kvMemos = memos.filter(m => m.type == "kv")
 
 #if kvMemos.len() > 0 [
   #v(1em)

@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import { Input } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { BareMemo, getProjectId, scream } from "../../utils.ts";
+import { BareMemo, getProjectId, scream } from "@/utils.ts";
 import { promptForCost } from "./mod.ts";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 
 interface AddMemoOpts {
     name: string;

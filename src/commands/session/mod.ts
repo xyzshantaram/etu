@@ -1,9 +1,9 @@
 import { Command } from "commander";
 import { start } from "./start.ts";
 import { stop } from "./stop.ts";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 import { deleteSession } from "./delete.ts";
-import { Session, sessionName } from "../../utils.ts";
+import { Session, sessionName } from "@/utils.ts";
 import { edit } from "./edit.ts";
 import { cont } from "./continue.ts";
 

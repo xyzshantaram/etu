@@ -155,12 +155,19 @@ export const heading = colors.bold;
 export const info = colors.bold.blue;
 export const muted = colors.italic.gray;
 
+export const getDocumentsDir = async () => {
+    const documentsDir = await dir("document").catch(() => null);
+    if (documentsDir && documentsDir.trim().length) return documentsDir.trim();
+
+    const homeDir = await dir("home").catch(() => null);
+    if (!homeDir) scream("Couldn't find your home directory! Bailing.");
+    const p = path.join(homeDir!, "Documents");
+    await Deno.mkdir(p, { recursive: true });
+    return p;
+};
+
 const dataDir = await dir("data");
 if (!dataDir) scream("Couldn't find your data directory! Bailing.");
 
 export const dataPath = path.join(dataDir!, "etu");
 await Deno.mkdir(dataPath, { recursive: true });
-
-// Ensure templates directory exists
-const templatesPath = path.join(dataPath, "templates");
-await Deno.mkdir(templatesPath, { recursive: true });

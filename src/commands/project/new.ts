@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { heading, info, Maybe, scream, slugify, timeMs } from "../../utils.ts";
-import * as storage from "../../storage.ts";
+import { heading, info, Maybe, scream, slugify, timeMs } from "@/utils.ts";
+import * as storage from "@/storage.ts";
 
 interface ENewOpts {
     project: string;

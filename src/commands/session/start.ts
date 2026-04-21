@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { getProjectId, Maybe, scream, sessionName } from "../../utils.ts";
-import * as storage from "../../storage.ts";
+import { getProjectId, Maybe, scream, sessionName } from "@/utils.ts";
+import * as storage from "@/storage.ts";
 import { match } from "@/oxide";
 
 interface EStartOpts {

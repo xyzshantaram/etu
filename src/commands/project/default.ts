@@ -1,7 +1,7 @@
 import { Command } from "commander";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 import { match } from "@/oxide";
-import { scream } from "../../utils.ts";
+import { scream } from "@/utils.ts";
 
 const action = async (id: string) => {
     match(await storage.setDefaultProject(id), {

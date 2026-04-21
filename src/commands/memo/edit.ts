@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import { Confirm, Input, Select, SelectOption } from "@cliffy/prompt";
 import { match } from "@/oxide";
-import { BareMemo, getProjectId, Memo, scream, success } from "../../utils.ts";
-import * as storage from "../../storage.ts";
+import { BareMemo, getProjectId, Memo, scream, success } from "@/utils.ts";
+import * as storage from "@/storage.ts";
 import { promptForCost } from "./mod.ts";
 
 interface EditMemoOpts {
@@ -48,13 +48,13 @@ const action = async ({ project }: EditMemoOpts) => {
                 options: actionOpts,
             });
 
-            let updated: BareMemo = { name: toEdit.name, type: toEdit.type } as BareMemo;
-            if (toEdit.description) {
-                updated.description = toEdit.description;
+            let updated: BareMemo;
+            if (toEdit.type === "expense") {
+                updated = { name: toEdit.name, type: "expense", cost: toEdit.cost };
+            } else {
+                updated = { name: toEdit.name, type: "kv" };
             }
-            if (toEdit.type === "expense" && "cost" in toEdit) {
-                updated = { ...updated, type: "expense", cost: toEdit.cost };
-            }
+            if (toEdit.description) updated.description = toEdit.description;
 
             switch (update) {
                 case "desc": {
@@ -84,21 +84,15 @@ const action = async ({ project }: EditMemoOpts) => {
                     }
 
                     if (newType === "expense") {
-                        // Transitioning from note to expense - require amount
                         const cost = await promptForCost();
-                        updated = { name: toEdit.name, type: "expense", cost } as BareMemo;
-                        if (toEdit.description) {
-                            updated.description = toEdit.description;
-                        }
+                        updated = { name: updated.name, type: "expense", cost };
+                        if (toEdit.description) updated.description = toEdit.description;
                     } else {
-                        // Transitioning from expense to note - remove cost
-                        if (toEdit.type === "expense" && "cost" in toEdit) {
+                        if (toEdit.type === "expense") {
                             console.log(`${success("Removing expense amount:")} ${toEdit.cost}`);
                         }
-                        updated = { name: toEdit.name, type: "kv" } as BareMemo;
-                        if (toEdit.description) {
-                            updated.description = toEdit.description;
-                        }
+                        updated = { name: updated.name, type: "kv" };
+                        if (toEdit.description) updated.description = toEdit.description;
                     }
                     break;
                 }
@@ -107,11 +101,10 @@ const action = async ({ project }: EditMemoOpts) => {
                         return scream("Error: invalid note type for cost edit. This is an etu bug");
                     }
                     const cost = await promptForCost(toEdit.cost);
-                    updated = { ...updated, type: "expense", cost };
+                    updated = { name: updated.name, type: "expense", cost };
+                    if (toEdit.description) updated.description = toEdit.description;
                     break;
                 }
-                default:
-                    break;
             }
 
             if (await Confirm.prompt({ message: "Save changes?" })) {

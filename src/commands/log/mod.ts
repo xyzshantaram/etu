@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import { getProjectId, scream, success } from "../../utils.ts";
+import { getProjectId, scream, success } from "@/utils.ts";
 import { gatherLogData } from "./utils/gather.ts";
 import { renderLogTerminal } from "./utils/render-terminal.ts";
 import { findTemplate } from "./utils/template-discovery.ts";
@@ -8,7 +8,7 @@ import { LiquidRenderer } from "./renderers/liquid.ts";
 import { TypstRenderer } from "./renderers/typst.ts";
 import { resolveOutputPath, writeOutput } from "./utils/output.ts";
 import type { OutputFormat, TemplateRenderer } from "./renderers/types.ts";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 
 interface ESummaryOpts {
     short: boolean;
@@ -27,7 +27,6 @@ const action = async (opts: ESummaryOpts) => {
     return match(await getProjectId(opts.project), {
         Err: (msg: string) => scream(msg),
         Ok: async (id: string) => {
-            // If JSON output requested, print and exit
             if (opts.json) {
                 const data = await gatherLogData(id);
                 console.log(JSON.stringify(data, null, 2));
@@ -36,60 +35,43 @@ const action = async (opts: ESummaryOpts) => {
 
             const data = await gatherLogData(id);
 
-            // If template specified, use renderer system
             if (opts.template) {
-                // Find the template
                 const templateInfo = await findTemplate(opts.template) ??
                     scream(
                         `Template '${opts.template}' not found. ` +
-                        `Please ensure it exists in your templates directory as ` +
-                        `'${opts.template}.liquid' or '${opts.template}.typ'.`
+                            `Please ensure it exists in your templates directory as ` +
+                            `'${opts.template}.liquid' or '${opts.template}.typ'.`,
                     );
 
-                // Get the appropriate renderer
                 const renderer: TemplateRenderer = templateInfo.type === "liquid"
                     ? new LiquidRenderer()
                     : new TypstRenderer();
 
-                // Determine output format
                 let format: OutputFormat;
                 if (opts.format) {
-                    // Validate format
                     if (!["html", "pdf", "png"].includes(opts.format)) {
                         scream(`Invalid format: ${opts.format}. Must be one of: html, pdf, png`);
                     }
                     format = opts.format as OutputFormat;
                 } else {
-                    // Use renderer's default format
                     format = renderer.defaultFormat;
                 }
 
-                // Get project for filename generation
                 const project = (await storage.getProjectById(id)).unwrap();
-
-                // Render the template
                 const result = await renderer.render(data, {
                     templateName: opts.template,
                     format,
-                    outputPath: opts.output,
-                    outputDir: opts.outputDir,
-                    currentDir: opts.currentDir,
                 });
 
-                // Handle output
                 if (result.stdout) {
-                    // Output to stdout
                     if (typeof result.content === "string") {
                         console.log(result.content);
                     } else {
                         scream("Cannot output binary content to stdout. Please specify an output file with -o.");
                     }
                 } else {
-                    // Write to file
                     const outputPath = await resolveOutputPath(
                         {
-                            templateName: opts.template,
-                            format,
                             outputPath: opts.output,
                             outputDir: opts.outputDir,
                             currentDir: opts.currentDir,
@@ -98,14 +80,12 @@ const action = async (opts: ESummaryOpts) => {
                         format,
                     );
 
-                    const resolvedPath = outputPath ??
-                        scream("Failed to determine output path.");
+                    const resolvedPath = outputPath ?? scream("Failed to determine output path.");
 
                     await writeOutput(resolvedPath, result.content);
                     console.log(success(`Output written to: ${resolvedPath}`));
                 }
             } else {
-                // No template - use terminal renderer (existing behavior)
                 renderLogTerminal(data, {
                     short: opts.short,
                     timeOnly: opts.timeOnly,

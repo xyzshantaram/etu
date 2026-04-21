@@ -12,11 +12,11 @@ import {
     sessionName,
     success,
     timeMs,
-} from "../../utils.ts";
+} from "@/utils.ts";
 import { getSessionChoices } from "./mod.ts";
 import { Input, Select } from "@cliffy/prompt";
 import { Table } from "@cliffy/table";
-import * as storage from "../../storage.ts";
+import * as storage from "@/storage.ts";
 
 interface EEditSessionOpts {
     project: string;

@@ -1,16 +1,34 @@
 import { Table } from "@cliffy/table";
-import { heading, humanReadable, scream, Session, sessionName, success } from "../../../utils.ts";
+import { heading, humanReadable, scream, Session, sessionName, success } from "@/utils.ts";
 import type { LogData, SessionsByDay } from "./gather.ts";
 
+const destructureDate = (d: Date) => {
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()] as const;
+};
+
+const toDateStr = (time: number) => {
+    const date = new Date(time);
+    const [y, a, d, h, m] = destructureDate(date).map((itm) => itm.toString().padStart(2, "0"));
+    return `${y}-${a}-${d} ${h}:${m}`;
+};
+
 function printTimesheet(sessionsByDay: SessionsByDay[]) {
-    const table: string[][] = [["Date", "Hours"]];
+    const table: string[][] = [];
+    let currentMonth = -1;
     for (const { date, millis } of sessionsByDay) {
+        const d = new Date(date);
+        let month = "";
+        if (currentMonth !== d.getMonth()) {
+            currentMonth = d.getMonth();
+            month = new Intl.DateTimeFormat("en-GB", { month: "long" }).format(d);
+        }
         table.push([
-            heading(new Date(date).toLocaleDateString()),
+            month,
+            heading(new Intl.DateTimeFormat("en-GB").format(d)),
             success(humanReadable(millis, true)),
         ]);
     }
-    Table.from(table).border(true).render();
+    Table.from([["Month", "Date", "Hours"], ...table]).border(true).render();
 }
 
 function printLog(sessions: Session[]) {
@@ -21,11 +39,11 @@ function printLog(sessions: Session[]) {
     const idx = () => (++count).toString().padStart(length, "0");
     for (const session of sessions) {
         if (!session.end) continue;
-        const duration = humanReadable((session.end || Date.now()) - session.start, true);
+        const duration = humanReadable(session.end - session.start, true);
         rows.push([
             idx(),
             heading(sessionName(session.name, false)),
-            new Date(session.start).toLocaleString(),
+            toDateStr(session.start),
             success(duration),
         ]);
     }

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import * as storage from "../../storage.ts";
-import { getProjectId, humanReadable, scream, sessionName } from "../../utils.ts";
+import * as storage from "@/storage.ts";
+import { getProjectId, humanReadable, scream, sessionName } from "@/utils.ts";
 
 interface EStopOpts {
     project: string;

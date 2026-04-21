@@ -1,12 +1,9 @@
 import { NodeCompiler } from "@myriaddreamin/typst-ts-node-compiler";
-import { scream } from "../../../utils.ts";
-import type { LogData } from "../utils/gather.ts";
+import { scream } from "@/utils.ts";
+import type { LogData } from "@/commands/log/utils/gather.ts";
+import { findTemplate } from "@/commands/log/utils/template-discovery.ts";
 import type { OutputFormat, RenderOptions, RenderResult, TemplateRenderer } from "./types.ts";
 
-/**
- * Typst template renderer
- * Outputs PDF by default
- */
 export class TypstRenderer implements TemplateRenderer {
     readonly type = "typst" as const;
     readonly defaultFormat = "pdf" as const;
@@ -16,87 +13,37 @@ export class TypstRenderer implements TemplateRenderer {
     async render(data: LogData, options: RenderOptions): Promise<RenderResult> {
         const { templateName, format = this.defaultFormat } = options;
 
-        // Find template file
-        const templatePath = await this.findTemplate(templateName) ??
+        const template = await findTemplate(templateName);
+        if (!template || template.type !== "typst") {
             scream(
                 `A template file with name '${templateName}.typ' could not be found. ` +
                     `Please make sure it is present in your templates directory.`,
             );
+        }
 
-        // Read template
-        const mainFileContent = await Deno.readTextFile(templatePath);
-
-        // Prepare inputs - convert LogData to JSON strings for Typst
+        let mainFileContent: string;
+        try {
+            mainFileContent = await Deno.readTextFile(template!.path);
+        } catch (e) {
+            if (e instanceof Deno.errors.NotFound) {
+                scream(`Template '${templateName}' not found at ${template!.path}`);
+            } else {
+                scream(`Error reading template: ${e}`);
+            }
+        }
         const inputs = this.prepareInputs(data);
-
-        // Compile based on format
-        const content = await this.compile(mainFileContent, inputs, format);
-
-        // Determine if output should go to stdout
-        // HTML can go to stdout, but PDF/PNG should go to file
-        const stdout = format === "html";
+        const content = await this.compile(mainFileContent!, inputs, format);
 
         return {
             content,
             format,
-            stdout,
+            stdout: format === "html",
         };
-    }
-
-    private async findTemplate(name: string): Promise<string | null> {
-        const { findTemplate } = await import("../utils/template-discovery.ts");
-        const template = await findTemplate(name);
-
-        if (template?.type === "typst") {
-            return template.path;
-        }
-
-        return null;
     }
 
     private prepareInputs(data: LogData): Record<string, string> {
-        // Helper to format timestamps for display
-        const formatTimestamp = (ms: number): string => {
-            const date = new Date(ms);
-            return date.toISOString().slice(0, 16).replace("T", " ");
-        };
-
-        // Add formatted dates to sessions
-        const sessionsWithDates = data.sessions.map((session) => ({
-            ...session,
-            startFormatted: formatTimestamp(session.start),
-            endFormatted: session.end ? formatTimestamp(session.end) : null,
-        }));
-
-        // Build a single context object with all data
-        const context = {
-            project: data.project,
-            sessions: sessionsWithDates,
-            time: data.time,
-            ongoingTime: data.ongoingTime,
-            currency: data.currency,
-            currentSession: data.currentSession
-                ? {
-                    ...data.currentSession,
-                    startFormatted: formatTimestamp(data.currentSession.start),
-                }
-                : null,
-            elapsed: data.elapsed,
-            decimalHours: data.decimalHours,
-            gross: data.gross,
-            advanceRemaining: data.advanceRemaining,
-            finalAmount: data.finalAmount,
-            hoursExpr: data.hoursExpr,
-            memos: data.memos,
-            totalExpenses: data.totalExpenses,
-            finalWithExpenses: data.finalWithExpenses,
-            sessionsByDay: data.sessionsByDay,
-            now: Date.now(),
-        };
-
-        // Return a single 'ctx' input containing everything
         return {
-            ctx: JSON.stringify(context),
+            ctx: JSON.stringify({ ...data, now: Date.now() }),
         };
     }
 
@@ -105,7 +52,6 @@ export class TypstRenderer implements TemplateRenderer {
         inputs: Record<string, string>,
         format: OutputFormat,
     ): Promise<Uint8Array | string> {
-        // Initialize compiler if needed
         if (!this.compiler) {
             try {
                 this.compiler = NodeCompiler.create();
@@ -123,20 +69,11 @@ export class TypstRenderer implements TemplateRenderer {
 
         switch (format) {
             case "pdf": {
-                const result = this.compiler.pdf({
-                    mainFileContent,
-                    inputs,
-                });
+                const result = this.compiler.pdf({ mainFileContent, inputs });
                 return Promise.resolve(result);
             }
             case "html": {
-                // Typst doesn't natively support HTML, but we can use SVG
-                // For now, we'll compile to SVG and return it as HTML-embeddable
-                const result = this.compiler.svg({
-                    mainFileContent,
-                    inputs,
-                });
-                // Wrap SVG in minimal HTML for display
+                const result = this.compiler.svg({ mainFileContent, inputs });
                 return Promise.resolve(`<!DOCTYPE html>
 <html>
 <head>
