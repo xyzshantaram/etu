@@ -2,18 +2,27 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Project Log Summary: {{ project.name }}</title>
+  <title>Invoice: {{ project.name }}</title>
   <style>
     body { font-family: sans-serif; margin: 2em; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 2em; border: 2px solid black; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
     th, td, tr { break-inside: avoid; }
-    th, td { padding: 0.5em; text-align: left; }
-    th { background: black; color: white };
+    th, td { padding: 0.5em; text-align: left; border: none; }
+    th { background: black; color: white; }
     .money { font-weight: bold; color: #27ae60; }
     .warning { color: #e67e22; }
     .kv-memos { margin-top: 2em; }
     .expenses-table { margin-bottom: 2em; }
-    h1 { text-align: center; }
+    h1 { text-align: center; margin-bottom: 2em; }
+    .header-section { display: flex; justify-content: space-between; margin-bottom: 1em; }
+    .company-info, .bill-to { flex: 1; }
+    .invoice-meta { text-align: right; flex: 1; }
+    hr { border: none; border-top: 2px solid black; margin: 1.5em 0; }
+    .payment-terms { margin-top: 2em; padding-top: 1em; border-top: 1px solid #ccc; }
+    .error { color: red; font-weight: bold; padding: 2em; text-align: center; }
+    
+    /* Set this to 'none' to hide invoice metadata */
+    .show-invoice-meta { display: block; }
 
     @media screen and (max-aspect-ratio: 1/1) {
       body {
@@ -23,8 +32,50 @@
   </style>
 </head>
 <body>
-  <h1>ACME Inc.</h1>
-  <h2>Invoice</h2>
+  {% assign expenses = memos | where: 'type', 'expense' %}
+  {% assign notes = memos | where: 'type', 'kv' %}
+  
+  {% comment %} Validate that we have at least something to show {% endcomment %}
+  {% if sessions.size == 0 and expenses.size == 0 and notes.size == 0 %}
+    <div class="error">
+      <h1>ERROR</h1>
+      <p>No sessions, expenses, or memos found. Cannot generate invoice.</p>
+    </div>
+  {% else %}
+  
+  <h1>INVOICE</h1>
+  
+  <div class="company-info">
+    <strong>ACME Inc.</strong><br>
+    <!-- Optional address - comment out or remove if not needed -->
+    123 Business Street<br>
+    Suite 100<br>
+    City, State 12345<br>
+    contact@acme.com
+  </div>
+
+  <hr>
+
+  <div class="header-section">
+    <div class="bill-to">
+      <strong>Bill To:</strong><br>
+      Client Name<br>
+      <!-- Optional address - comment out or remove if not needed -->
+      456 Client Avenue<br>
+      Client City, State 67890
+    </div>
+    
+    <div class="invoice-meta show-invoice-meta">
+      <strong>Date:</strong> {{ now | divided_by: 1000 | date: '%Y-%m-%d' }}<br>
+      <strong>Due Date:</strong> {{ now | divided_by: 1000 | date: '%Y-%m-%d' | date: "%s" | plus: 2592000 | date: '%Y-%m-%d' }}<br>
+      <!-- Optional order/invoice ID - comment out if not needed -->
+      <strong>Invoice #:</strong> INV-2024-001
+    </div>
+  </div>
+
+  <hr>
+
+  {% if sessions.size > 0 %}
   <h3>Sessions</h3>
   <table>
     <thead>
@@ -54,8 +105,8 @@
       {% endfor %}
     </tbody>
   </table>
+  {% endif %}
 
-  {% assign expenses = memos | where: 'type', 'expense' %}
   {% if expenses.size > 0 %}
     <h3>Expenses</h3>
     <table class="expenses-table">
@@ -78,26 +129,81 @@
     </table>
   {% endif %}
 
-  <h3>Summary</h3>
-  <ul>
-    <li><strong>Total time spent:</strong> {{ elapsed | humanReadable }} = {{ decimalHours }} h</li>
-    <li><strong>Gross amount:</strong> <span class="money">{{ currency }}{{ gross }}</span></li>
-    <li><strong>Hours paid in advance:</strong> {{ project.advance }} h</li>
-    {% if advanceRemaining > 0 %}
-      <li class="warning"><strong>Advance remaining:</strong> {{ advanceRemaining | humanReadable }}</li>
-    {% endif %}
-    <li>
-      <strong>Final amount:</strong>
-      <span class="money">
-        ({{ hoursExpr }}) * {{ currency }}{{ project.rate }}/h
-        {% if totalExpenses > 0 %} + {{ currency }}{{ totalExpenses }} (Expenses){% endif %} =
-        {{ currency }}{{ finalWithExpenses }}
-      </span>
-    </li>
-  </ul>
+  {% if sessions.size > 0 or expenses.size > 0 %}
+  <h3>Amount Due</h3>
+  <table>
+    <tbody>
+      {% if sessions.size > 0 %}
+      <tr>
+        <td><strong>Total time spent:</strong></td>
+        <td>{{ elapsed | humanReadable }} ({{ decimalHours }} hours)</td>
+      </tr>
+      <tr>
+        <td><strong>Hourly rate:</strong></td>
+        <td>{{ currency }}{{ project.rate }}/hour</td>
+      </tr>
+      <tr>
+        <td><strong>Gross amount:</strong></td>
+        <td class="money">{{ currency }}{{ gross }}</td>
+      </tr>
+      {% endif %}
+      {% if totalExpenses > 0 %}
+      <tr>
+        <td><strong>+ Expenses:</strong></td>
+        <td class="money">{{ currency }}{{ totalExpenses }}</td>
+      </tr>
+      {% endif %}
+      {% if sessions.size > 0 %}
+      <tr>
+        <td><strong>− Hours paid in advance:</strong></td>
+        <td>{{ project.advance }} hours ({{ currency }}{{ project.advance | times: project.rate }})</td>
+      </tr>
+      {% endif %}
+      <tr style="border-top: 2px solid black;">
+        <td><strong>Amount Payable:</strong></td>
+        <td class="money" style="font-size: 1.2em;">
+          {% if sessions.size > 0 %}
+            {{ currency }}{{ finalWithExpenses }}
+          {% else %}
+            {{ currency }}{{ totalExpenses }}
+          {% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% if advanceRemaining > 0 %}
+    <p class="warning"><strong>Note:</strong> Advance remaining: {{ advanceRemaining | humanReadable }}</p>
+  {% endif %}
+  {% elsif notes.size > 0 %}
+  {% comment %} Only memos, no sessions or expenses - show a bill with $0.00 {% endcomment %}
+  <h3>Amount Due</h3>
+  <table>
+    <tbody>
+      <tr style="border-top: 2px solid black;">
+        <td><strong>Amount Payable:</strong></td>
+        <td class="money" style="font-size: 1.2em;">{{ currency }}0.00</td>
+      </tr>
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="payment-terms">
+    <h3>Payment Terms</h3>
+    <p>
+      Payment is due within 30 days of invoice date.<br>
+      Please make payment via:<br>
+      • Bank transfer to [Account Details]<br>
+      • Check payable to ACME Inc.<br>
+      • Online payment at [Payment URL]
+    </p>
+    <p>
+      Thank you for your business!
+    </p>
+  </div>
 
   {% if currentSession %}
-    <h2>Current Session</h2>
+    <h3>Current Session</h3>
     <ul>
       <li><strong>Name:</strong> {{ currentSession.name | default: '(untitled)' }}</li>
       <li><strong>Started at:</strong> {{ currentSession.start | divided_by: 1000 | date: '%Y-%m-%d %H:%M' }}</li>
@@ -105,7 +211,6 @@
     </ul>
   {% endif %}
 
-  {% assign notes = memos | where: 'type', 'kv' %}
   {% if notes.size > 0 %}
     <div class="kv-memos">
       <h3>Memos</h3>
@@ -115,6 +220,8 @@
         {% endfor %}
       </ul>
     </div>
+  {% endif %}
+  
   {% endif %}
 </body>
 </html>

@@ -133,7 +133,7 @@ export const sessionName = (name: Maybe<string>, quoted = true) => {
     return quoted ? `\`${s}\`` : s;
 };
 
-export const die = (code: number, msg: string) => {
+export const die = (code: number, msg: string): never => {
     if (code === 0) console.log(msg);
     else console.error(msg);
     return Deno.exit(code);
@@ -142,9 +142,9 @@ export const die = (code: number, msg: string) => {
 const error = colors.bold.red;
 
 // deno-lint-ignore no-explicit-any
-export const scream = (...args: any[]) => die(1, error("ERROR:") + ` ${args.join(" ")}`);
+export const scream = (...args: any[]): never => die(1, error("ERROR:") + ` ${args.join(" ")}`);
 // deno-lint-ignore no-explicit-any
-export const exit = (...args: any[]) => die(0, args.join(" "));
+export const exit = (...args: any[]): never => die(0, args.join(" "));
 
 export const SELECTED_DATE_FUTURE_ERROR = "Date cannot be in the future";
 export const SELECTED_DATE_END_BEFORE_START = "End date cannot be before start date";
@@ -160,3 +160,7 @@ if (!dataDir) scream("Couldn't find your data directory! Bailing.");
 
 export const dataPath = path.join(dataDir!, "etu");
 await Deno.mkdir(dataPath, { recursive: true });
+
+// Ensure templates directory exists
+const templatesPath = path.join(dataPath, "templates");
+await Deno.mkdir(templatesPath, { recursive: true });

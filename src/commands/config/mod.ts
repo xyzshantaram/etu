@@ -2,8 +2,15 @@ import { Command } from "commander";
 import { info, Maybe, scream, success } from "../../utils.ts";
 import * as storage from "../../storage.ts";
 
+import * as path from "@std/path";
+import { getDocumentsDir } from "../log/utils/output.ts";
+
+const documentsDir = await getDocumentsDir();
+const defaultOutputPath = documentsDir ? path.join(documentsDir, "etu") : "";
+
 const defaults = {
     "currency": "$",
+    "output-path": defaultOutputPath,
 };
 
 const validKeys = Object.keys(defaults) as (keyof typeof defaults)[];
