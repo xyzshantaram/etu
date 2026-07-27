@@ -32,6 +32,6 @@ const action = async ({ project }: EEditSessionOpts) => {
 };
 
 export const deleteMemo = new Command("delete")
-    .option("-p --project", "id of the project whose note to delete. uses default project if not specified.")
+    .option("-p --project <string>", "id of the project whose note to delete. uses default project if not specified.")
     .description("Delete a memo (note or expense) from a project.")
     .action(action);
