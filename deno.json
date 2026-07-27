@@ -14,7 +14,8 @@
   },
   "tasks": {
     "run": "deno run --unstable-kv --allow-env --allow-read --allow-write --allow-ffi src/etu.ts",
-    "build": "deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write --allow-ffi src/etu.ts"
+    "build": "deno compile --output etu --unstable-kv --allow-env --allow-read --allow-write --allow-ffi src/etu.ts",
+    "skill": "deno run --allow-run=etu --allow-env=HOME --allow-read --allow-write generate-skill.ts"
   },
   "fmt": {
     "indentWidth": 4,
