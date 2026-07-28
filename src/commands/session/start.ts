@@ -18,6 +18,7 @@ const action = async (name: Maybe<string>, { project }: EStartOpts, cmd: Command
                 fail(cmd, "A session is already running for the specified project.");
             }
             const sessionId = await storage.putSession(id, { name, start: currentTime });
+            await storage.touchProject(id);
             const project = await storage.getProjectById(id);
 
             respond(cmd, (data) => {

@@ -26,8 +26,48 @@ export async function* getSessions(id: string) {
 export async function* getProjects() {
     const kv = await getKv();
     for await (const project of kv.list<Project>({ prefix: ["projects"] })) {
-        if (project.key.length === 2) yield project.value;
+        if (project.key.length === 2) yield await backfillTimestamps(project.value);
     }
+}
+
+async function backfillTimestamps(project: Project): Promise<Project> {
+    const hasCreatedAt = project.createdAt !== undefined;
+    const hasLastModified = project.lastModified !== undefined;
+
+    if (hasCreatedAt && hasLastModified) return project;
+
+    const migrated = { ...project };
+    let earliestStart: number | undefined;
+    let latestActivity: number | undefined;
+
+    for await (const session of getSessions(project.slug)) {
+        const start = session.value.start;
+        const end = session.value.end ?? start;
+
+        if (earliestStart === undefined || start < earliestStart) {
+            earliestStart = start;
+        }
+        if (latestActivity === undefined || end > latestActivity) {
+            latestActivity = end;
+        }
+    }
+
+    if (!hasCreatedAt) {
+        migrated.createdAt = earliestStart ?? Date.now();
+    }
+    if (!hasLastModified) {
+        migrated.lastModified = latestActivity ?? migrated.createdAt!;
+    }
+
+    await putProject(migrated);
+    return migrated;
+}
+
+export async function touchProject(slug: string): Promise<void> {
+    const project = await getProjectById(slug);
+    if (project.isNone()) return;
+    const p = project.unwrap();
+    await putProject({ ...p, lastModified: Date.now() });
 }
 
 export async function getDefaultProject(): Promise<Option<string>> {

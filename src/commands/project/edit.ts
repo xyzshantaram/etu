@@ -48,6 +48,7 @@ const action = async function ({ project, rate, advance, rename }: EEditOpts, cm
                 }
 
                 await storage.putProject(updatedProject);
+                await storage.touchProject(id);
                 const updated = await storage.getProjectById(id);
                 respond(cmd, (data) => {
                     console.log(data.message);
@@ -92,6 +93,7 @@ const action = async function ({ project, rate, advance, rename }: EEditOpts, cm
 
                 if (inp !== "exit") {
                     await storage.putProject(updatedProject);
+                    await storage.touchProject(id);
                 }
             }
 

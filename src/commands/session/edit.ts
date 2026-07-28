@@ -110,6 +110,7 @@ const action = async ({ project, sessionId, start, end, removeEnd, rename }: EEd
                 }
 
                 await storage.editSession(id, toEdit, changed);
+                await storage.touchProject(id);
                 respond(cmd, (data) => {
                     console.log(data.message);
                 }, {
@@ -220,6 +221,7 @@ const action = async ({ project, sessionId, start, end, removeEnd, rename }: EEd
                 }
 
                 await storage.editSession(id, toEdit, changed);
+                await storage.touchProject(id);
                 respond(cmd, (data) => {
                     console.log(data.message);
                 }, {

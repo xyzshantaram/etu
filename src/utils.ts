@@ -12,6 +12,8 @@ export interface Project {
     rate: number;
     slug: string;
     advance?: number;
+    createdAt?: number;
+    lastModified?: number;
 }
 
 export interface Session {

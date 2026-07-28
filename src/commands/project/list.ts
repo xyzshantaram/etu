@@ -1,11 +1,19 @@
 import { Command } from "commander";
 import * as storage from "@/storage.ts";
-import { heading, info, muted, respond, success } from "@/utils.ts";
+import { fail, heading, info, muted, respond, success } from "@/utils.ts";
 import { Table } from "@cliffy/table";
 
 const currency = await storage.getConfigValue("currency");
 
-const action = async (_opts: any, cmd: Command) => {
+const action = async ({ page: pageStr }: { page?: string }, cmd: Command) => {
+    let page = 1;
+    if (pageStr !== undefined) {
+        page = +pageStr;
+        if (isNaN(page) || !Number.isInteger(page) || page < 1) {
+            fail(cmd, `Invalid page: "${pageStr}". Must be a positive integer.`);
+        }
+    }
+
     const projects: Array<{
         name: string;
         slug: string;
@@ -13,6 +21,8 @@ const action = async (_opts: any, cmd: Command) => {
         advance: number;
         elapsed: number;
         income: number;
+        createdAt?: number;
+        lastModified?: number;
     }> = [];
 
     for await (const project of storage.getProjects()) {
@@ -29,6 +39,8 @@ const action = async (_opts: any, cmd: Command) => {
             advance: project.advance || 0,
             elapsed,
             income,
+            createdAt: project.createdAt,
+            lastModified: project.lastModified,
         });
     }
 
@@ -39,7 +51,25 @@ const action = async (_opts: any, cmd: Command) => {
             ...p,
             isDefault: p.slug === defaultProjectSlug,
         }));
-        respond(cmd, () => {}, { defaultProjectSlug, projects: enriched });
+
+        // Sort by lastModified descending (most recent first).
+        // Projects missing lastModified (should not happen post-backfill) sort last.
+        enriched.sort((a, b) => (b.lastModified ?? 0) - (a.lastModified ?? 0));
+
+        const pageSize = 10;
+        const totalItems = enriched.length;
+        const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
+        const start = (page - 1) * pageSize;
+        const paginated = enriched.slice(start, start + pageSize);
+
+        respond(cmd, () => {}, {
+            defaultProjectSlug,
+            projects: paginated,
+            page,
+            pageSize,
+            totalItems,
+            totalPages,
+        });
         return;
     }
 
@@ -63,4 +93,5 @@ const action = async (_opts: any, cmd: Command) => {
 
 export const list = new Command("list")
     .description("List all projects.")
+    .option("--page <n>", "Page number for paginated output (structured mode only). Default: 1.")
     .action(action);

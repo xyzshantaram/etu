@@ -22,14 +22,14 @@ const action = async (
     }
 
     const slug = project || slugify(name);
-    await storage.putProject({ name, rate, slug, advance });
+    const now = Date.now();
+    await storage.putProject({ name, rate, slug, advance, createdAt: now, lastModified: now });
 
     if (initialHours) {
-        const currentTime = Date.now();
         await storage.putSession(slug, {
             name: "Initial hours",
-            start: currentTime - timeMs({ h: initialHours }),
-            end: currentTime,
+            start: now - timeMs({ h: initialHours }),
+            end: now,
         });
     }
 

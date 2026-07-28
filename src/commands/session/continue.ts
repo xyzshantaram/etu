@@ -21,6 +21,7 @@ const action = async ({ project }: EStartOpts, cmd: Command) => {
             }
             const name = last!.value.name;
             await storage.putSession(id, { name, start: currentTime });
+            await storage.touchProject(id);
             const project = await storage.getProjectById(id);
 
             respond(cmd, (data) => {

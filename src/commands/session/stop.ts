@@ -17,6 +17,7 @@ const action = async ({ project }: EStopOpts, cmd: Command) => {
             }
             const now = Date.now();
             await storage.endSession(session!, now);
+            await storage.touchProject(id);
             const name = sessionName(session?.value.name);
             const duration = now - session!.value.start;
             const durationFormatted = humanReadable(duration);
