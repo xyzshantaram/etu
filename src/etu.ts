@@ -14,6 +14,7 @@ export const createEtu = () => {
         .name("etu")
         .description("A simple time-tracker application.")
         .version("0.0.1")
+        .option("--structured", "Emit structured JSON output instead of formatted text.")
         .showHelpAfterError();
 
     [config, log, session, project, status, memo].forEach((cmd) => etu.addCommand(cmd));

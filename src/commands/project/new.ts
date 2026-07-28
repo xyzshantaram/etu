@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { heading, info, Maybe, scream, slugify, timeMs } from "@/utils.ts";
+import { fail, heading, info, Maybe, respond, slugify, timeMs } from "@/utils.ts";
 import * as storage from "@/storage.ts";
 
 interface ENewOpts {
@@ -14,10 +14,11 @@ const action = async (
     rate: number,
     initialHours: Maybe<number>,
     { project, advance }: ENewOpts,
+    cmd: Command,
 ) => {
     if (project) {
         const maybe = await storage.getProjectById(project);
-        if (maybe.isSome()) scream(`Project with id ${maybe} already exists.`);
+        if (maybe.isSome()) fail(cmd, `Project with slug "${project}" already exists.`);
     }
 
     const slug = project || slugify(name);
@@ -34,9 +35,12 @@ const action = async (
 
     const rateStr = info(`${currency}${rate}/hr`);
     const hours = initialHours ? "Initial hours: " + initialHours + "." : "";
-    console.log(
-        `Created project "${heading(name)}" with id ${heading(slug)}. Rate is ${rateStr}. ${hours}`,
-    );
+    respond(cmd, (data) => {
+        console.log(data.message);
+    }, {
+        message: `Created project "${heading(name)}" with id ${heading(slug)}. Rate is ${rateStr}. ${hours}`,
+        project: { name, slug, rate },
+    });
     await storage.setDefaultProject(slug);
 };
 

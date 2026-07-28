@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getProjectId, Maybe, scream, sessionName } from "@/utils.ts";
+import { fail, getProjectId, Maybe, respond, sessionName } from "@/utils.ts";
 import * as storage from "@/storage.ts";
 import { match } from "@/oxide";
 
@@ -7,24 +7,32 @@ interface EStartOpts {
     project: string;
 }
 
-const action = async (name: Maybe<string>, { project }: EStartOpts) => {
+const action = async (name: Maybe<string>, { project }: EStartOpts, cmd: Command) => {
     name = sessionName(name, false);
     return match(await getProjectId(project), {
-        Err: (msg: string) => scream(msg),
+        Err: (msg: string) => fail(cmd, msg),
         Ok: async (id: string) => {
             const currentTime = Date.now();
             const last = await storage.getLastSession(id);
             if (last && !last.value.end) {
-                scream("A session is already running for the specified project.");
+                fail(cmd, "A session is already running for the specified project.");
             }
-            await storage.putSession(id, { name, start: currentTime });
+            const sessionId = await storage.putSession(id, { name, start: currentTime });
             const project = await storage.getProjectById(id);
 
-            console.log(
-                `Started session ${name} in project ${project.unwrap().name}. Current time: ${
+            respond(cmd, (data) => {
+                console.log(data.message);
+            }, {
+                message: `Started session ${name} in project ${project.unwrap().name}. Current time: ${
                     new Date(currentTime).toLocaleString()
                 }`,
-            );
+                session: {
+                    ulid: sessionId,
+                    name,
+                    start: currentTime,
+                    startFormatted: new Date(currentTime).toLocaleString(),
+                },
+            });
         },
     });
 };

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getDocumentsDir, info, Maybe, scream, success } from "@/utils.ts";
+import { fail, getDocumentsDir, info, Maybe, respond, success } from "@/utils.ts";
 import * as storage from "@/storage.ts";
 
 import * as path from "@std/path";
@@ -27,22 +27,35 @@ const isValidKey = (k: Maybe<string>): k is keyof typeof defaults => {
     return (validKeys as string[]).includes(k || "");
 };
 
-const action = async (key: Maybe<string>, value: Maybe<string>) => {
+const action = async (key: Maybe<string>, value: Maybe<string>, _opts: unknown, cmd: Command) => {
     if (key && !isValidKey(key)) {
-        scream(`${key} is not a valid configuration key.`);
+        fail(cmd, `${key} is not a valid configuration key.`);
     }
 
     if (key && value) {
         await storage.setConfigValue(key, value);
-        return console.log(success(`Successfully set ${key} to ${value}`));
+        respond(cmd, () => {
+            console.log(success(`Successfully set ${key} to ${value}`));
+        }, { key, value });
+        return;
     } else if (key && !value) {
         const item = await storage.getConfigValue(key);
-        return console.log(`${key}: ${info(item)}`);
+        respond(cmd, () => {
+            console.log(`${key}: ${info(item)}`);
+        }, { [key]: item });
+        return;
     }
+    // Print entire config
+    const entries: Record<string, string> = {};
     for (const k of validKeys) {
         const v = await storage.getConfigValue(k);
-        console.log(`${k}: ${info(v === "" ? "<nothing>" : v)}`);
+        entries[k] = v === "" ? "<nothing>" : v;
     }
+    respond(cmd, (data) => {
+        for (const k of validKeys) {
+            console.log(`${k}: ${info(data[k])}`);
+        }
+    }, entries);
 };
 
 export const config = new Command("config")

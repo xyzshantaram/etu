@@ -1,14 +1,19 @@
 import { Command } from "commander";
 import * as storage from "@/storage.ts";
 import { match } from "@/oxide";
-import { scream } from "@/utils.ts";
+import { fail, respond } from "@/utils.ts";
 
-const action = async (id: string) => {
+const action = async (id: string, _opts: unknown, cmd: Command) => {
     match(await storage.setDefaultProject(id), {
         Ok: (_) => {
-            console.log(`Successfully set default project to \`${id}\`.`);
+            respond(cmd, (data) => {
+                console.log(data.message);
+            }, {
+                message: `Successfully set default project to \`${id}\`.`,
+                project: { slug: id },
+            });
         },
-        Err: (msg) => scream(msg),
+        Err: (msg) => fail(cmd, msg),
     });
 };
 

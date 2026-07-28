@@ -42,7 +42,9 @@ const MS_PER_DAY = 86_400_000;
 const fmtLocal = (ms: number) => {
     const d = new Date(ms);
     const pad = (n: number) => n.toString().padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${
+        pad(d.getMinutes())
+    }`;
 };
 
 const localDateKey = (d: Date) => {

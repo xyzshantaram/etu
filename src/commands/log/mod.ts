@@ -1,12 +1,12 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import { getProjectId, scream, success, info } from "@/utils.ts";
+import { fail, getProjectId, info, respond, success } from "@/utils.ts";
 import { gatherLogData } from "./utils/gather.ts";
 import { renderLogTerminal } from "./utils/render-terminal.ts";
 import { findTemplate } from "./utils/template-discovery.ts";
 import { LiquidRenderer } from "./renderers/liquid.ts";
 import { TypstRenderer } from "./renderers/typst.ts";
-import { resolveOutputPath, writeOutput, openWithSystemViewer } from "./utils/output.ts";
+import { openWithSystemViewer, resolveOutputPath, writeOutput } from "./utils/output.ts";
 import type { OutputFormat, TemplateRenderer } from "./renderers/types.ts";
 import * as storage from "@/storage.ts";
 
@@ -16,27 +16,26 @@ interface ESummaryOpts {
     timeOnly: boolean;
     days: boolean;
     template?: string;
-    json?: boolean;
     format?: string;
     output?: string;
     outputDir?: string;
 }
 
-const action = async (opts: ESummaryOpts) => {
+const action = async (opts: ESummaryOpts, cmd: Command) => {
     return match(await getProjectId(opts.project), {
-        Err: (msg: string) => scream(msg),
+        Err: (msg: string) => fail(cmd, msg),
         Ok: async (id: string) => {
-            if (opts.json) {
-                const data = await gatherLogData(id);
-                console.log(JSON.stringify(data, null, 2));
+            const data = await gatherLogData(id);
+
+            if ((cmd.optsWithGlobals() as Record<string, unknown>).structured) {
+                respond(cmd, () => {}, data);
                 return;
             }
 
-            const data = await gatherLogData(id);
-
             if (opts.template) {
                 const templateInfo = await findTemplate(opts.template) ??
-                    scream(
+                    fail(
+                        cmd,
                         `Template '${opts.template}' not found. ` +
                             `Please ensure it exists in your templates directory as ` +
                             `'${opts.template}.liquid' or '${opts.template}.typ'.`,
@@ -49,7 +48,7 @@ const action = async (opts: ESummaryOpts) => {
                 let format: OutputFormat;
                 if (opts.format) {
                     if (!["html", "pdf", "png"].includes(opts.format)) {
-                        scream(`Invalid format: ${opts.format}. Must be one of: html, pdf, png`);
+                        fail(cmd, `Invalid format: ${opts.format}. Must be one of: html, pdf, png`);
                     }
                     format = opts.format as OutputFormat;
                 } else {
@@ -66,7 +65,7 @@ const action = async (opts: ESummaryOpts) => {
                     if (typeof result.content === "string") {
                         console.log(result.content);
                     } else {
-                        scream("Cannot output binary content to stdout. Please specify an output file with -o.");
+                        fail(cmd, "Cannot output binary content to stdout. Please specify an output file with -o.");
                     }
                 } else {
                     const outputPath = await resolveOutputPath(
@@ -107,14 +106,13 @@ export const log = new Command("log")
         "Don't print the log of hours worked. If used in conjunction with --time-only, prints the time in a short format ([xx]h[yy]m[zz]s).",
     )
     .option("-d --days", "Group hours by day instead of session")
-    .option("--json", "Output all project log data as JSON.")
     .description(
         "Print the summary (hours worked, total billing) of the project.",
     )
     .option(
         "--template <name>",
         "Render using a template (without extension). Auto-detects .liquid or .typ format. " +
-        "Liquid defaults to HTML output (stdout), Typst defaults to PDF output (file).",
+            "Liquid defaults to HTML output (stdout), Typst defaults to PDF output (file).",
     )
     .option(
         "--format <format>",

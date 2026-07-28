@@ -1,25 +1,37 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
 import * as storage from "@/storage.ts";
-import { getProjectId, humanReadable, scream, sessionName } from "@/utils.ts";
+import { fail, getProjectId, humanReadable, respond, sessionName } from "@/utils.ts";
 
 interface EStopOpts {
     project: string;
 }
 
-const action = async ({ project }: EStopOpts) => {
+const action = async ({ project }: EStopOpts, cmd: Command) => {
     return await match(await getProjectId(project), {
-        Err: (msg: string) => scream(msg),
+        Err: (msg: string) => fail(cmd, msg),
         Ok: async (id: string) => {
             const session = await storage.getLastSession(id);
             if (!session || !!session.value.end) {
-                scream("No ongoing session found for given project.");
+                fail(cmd, "No ongoing session found for given project.");
             }
             const now = Date.now();
             await storage.endSession(session!, now);
             const name = sessionName(session?.value.name);
-            const time = humanReadable(now - session!.value.start);
-            console.log(`Stopped session ${name}. Time worked: ${time}`);
+            const duration = now - session!.value.start;
+            const durationFormatted = humanReadable(duration);
+            respond(cmd, (data) => {
+                console.log(data.message);
+            }, {
+                message: `Stopped session ${name}. Time worked: ${durationFormatted}`,
+                session: {
+                    name: session!.value.name,
+                    start: session!.value.start,
+                    end: now,
+                    duration,
+                    durationFormatted,
+                },
+            });
         },
     });
 };

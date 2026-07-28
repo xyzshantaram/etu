@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { match } from "@/oxide";
-import { getProjectId, heading, humanReadable, scream, success } from "@/utils.ts";
+import { fail, getProjectId, heading, humanReadable, respond, success } from "@/utils.ts";
 import * as storage from "@/storage.ts";
 
 interface EStatusOpts {
@@ -9,15 +9,36 @@ interface EStatusOpts {
     showProject: boolean;
 }
 
-const action = async ({ short, project, showProject = false }: EStatusOpts) => {
+const action = async ({ short, project, showProject = false }: EStatusOpts, cmd: Command) => {
     return match(await getProjectId(project), {
-        Err: (msg: string) => scream(msg),
+        Err: (msg: string) => fail(cmd, msg),
         Ok: async (id: string) => {
             const project = await storage.getProjectById(id).then((f) => f.unwrap());
             const session = await storage.getLastSession(id);
 
             if (short) {
-                if (session && !session.value.end) {
+                if ((cmd.optsWithGlobals() as Record<string, unknown>).structured) {
+                    const result = {
+                        active: session !== undefined && !session.value.end,
+                        project: { slug: project.slug, name: project.name },
+                        session: session
+                            ? {
+                                name: session.value.name,
+                                start: session.value.start,
+                                startFormatted: new Date(session.value.start).toLocaleString(),
+                                elapsed: session.value.end
+                                    ? session.value.end - session.value.start
+                                    : Date.now() - session.value.start,
+                                elapsedFormatted: humanReadable(
+                                    session.value.end
+                                        ? session.value.end - session.value.start
+                                        : Date.now() - session.value.start,
+                                ),
+                            }
+                            : null,
+                    };
+                    respond(cmd, () => {}, result);
+                } else if (session && !session.value.end) {
                     console.log(
                         `${showProject ? project.slug + ":" : ""}${
                             humanReadable(Date.now() - session.value.start, true)
@@ -28,18 +49,36 @@ const action = async ({ short, project, showProject = false }: EStatusOpts) => {
             }
 
             if (!session) {
-                return scream("No sessions exist for the specified project.");
+                return fail(cmd, "No sessions exist for the specified project.");
             }
 
             if (session.value.end) {
-                return scream(`No ongoing session found for the project ${heading(project.name)}.`);
+                return fail(cmd, `No ongoing session found for the project ${heading(project.name)}.`);
             }
 
-            console.log(
-                `Time spent in ongoing session for project ${heading(project.name)}: ${
-                    success(humanReadable(Date.now() - session.value.start))
-                }`,
-            );
+            const elapsed = Date.now() - session.value.start;
+            const result = {
+                active: true,
+                project: {
+                    slug: project.slug,
+                    name: project.name,
+                },
+                session: {
+                    name: session.value.name,
+                    start: session.value.start,
+                    startFormatted: new Date(session.value.start).toLocaleString(),
+                    elapsed,
+                    elapsedFormatted: humanReadable(elapsed),
+                },
+            };
+
+            respond(cmd, (data) => {
+                console.log(
+                    `Time spent in ongoing session for project ${heading(data.project.name)}: ${
+                        success(data.session.elapsedFormatted)
+                    }`,
+                );
+            }, result);
         },
     });
 };

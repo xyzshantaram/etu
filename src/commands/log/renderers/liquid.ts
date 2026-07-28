@@ -2,7 +2,7 @@ import { Liquid } from "liquidjs";
 import { humanReadable, scream } from "@/utils.ts";
 import type { LogData } from "@/commands/log/utils/gather.ts";
 import { findTemplate } from "@/commands/log/utils/template-discovery.ts";
-import type { TemplateRenderer, RenderOptions, RenderResult } from "./types.ts";
+import type { RenderOptions, RenderResult, TemplateRenderer } from "./types.ts";
 
 export class LiquidRenderer implements TemplateRenderer {
     readonly type = "liquid" as const;

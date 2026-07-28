@@ -100,8 +100,59 @@ function countCommands(node: CommandNode): number {
     return count;
 }
 
+/** Option names that should be excluded from generated skill documentation. */
+const HIDDEN_OPTIONS = new Set(["--yes"]);
+
+/**
+ * Strips selected option rows (and their continuation lines) from the
+ * `Options:` block of a `--help` output. Only modifies lines within the
+ * Options block; everything else passes through unchanged.
+ */
+function filterHiddenOptions(helpText: string): string {
+    const lines = helpText.split("\n");
+    const result: string[] = [];
+    let inOptions = false;
+    let skipping = false;
+
+    for (const line of lines) {
+        if (!inOptions) {
+            if (line === "Options:") inOptions = true;
+            result.push(line);
+            continue;
+        }
+
+        // End of Options block: blank line or unindented (section header).
+        if (line.trim() === "" || (line.length > 0 && line[0] !== " ")) {
+            inOptions = false;
+            skipping = false;
+            result.push(line);
+            continue;
+        }
+
+        // An option row starts with exactly two spaces then `-` or `--`.
+        const isOptionLine = /^  --/.test(line) || /^  -\w/.test(line);
+
+        if (isOptionLine) {
+            const optMatch = line.match(/^  (--\S+)/);
+            if (optMatch && HIDDEN_OPTIONS.has(optMatch[1])) {
+                skipping = true;
+                continue; // drop this row
+            }
+            skipping = false;
+        } else if (skipping && /^ {3,}/.test(line)) {
+            // Continuation line of a hidden option — drop it.
+            continue;
+        }
+
+        result.push(line);
+    }
+
+    return result.join("\n");
+}
+
 function formatBlock(heading: string, helpText: string): string {
-    const trimmed = helpText.replace(/\s+$/, "");
+    const filtered = filterHiddenOptions(helpText);
+    const trimmed = filtered.replace(/\s+$/, "");
     return `${heading}\n\`\`\`\n${trimmed}\n\`\`\``;
 }
 
@@ -136,7 +187,9 @@ function spliceIntoFile(originalContent: string, generatedContent: string): stri
     const endIdx = lines.findIndex((line) => line === END_MARKER_LINE);
 
     if (beginIdx === -1) {
-        console.error(`Could not find BEGIN marker (a line starting with "${BEGIN_MARKER_PREFIX}") in the target file.`);
+        console.error(
+            `Could not find BEGIN marker (a line starting with "${BEGIN_MARKER_PREFIX}") in the target file.`,
+        );
         Deno.exit(1);
     }
     if (endIdx === -1) {
@@ -169,7 +222,9 @@ function spliceIntoFile(originalContent: string, generatedContent: string): stri
 async function main() {
     const [targetPathArg] = Deno.args;
     if (!targetPathArg || Deno.args.length !== 1) {
-        console.error("Usage: deno run --allow-run=etu --allow-read --allow-write generate-skill.ts <path-to-skill-md>");
+        console.error(
+            "Usage: deno run --allow-run=etu --allow-read --allow-write generate-skill.ts <path-to-skill-md>",
+        );
         Deno.exit(1);
     }
 

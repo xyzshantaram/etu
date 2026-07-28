@@ -48,9 +48,11 @@ export async function putProject(project: Project) {
     await kv.set(["projects", project.slug], project);
 }
 
-export async function putSession(id: string, sess: Session) {
+export async function putSession(id: string, sess: Session): Promise<string> {
     const kv = await getKv();
-    await kv.set(["projects", id, "sessions", ulid()], sess);
+    const sessionId = ulid();
+    await kv.set(["projects", id, "sessions", sessionId], sess);
+    return sessionId;
 }
 
 export async function getLastSession(id: string) {
@@ -122,8 +124,8 @@ export async function deleteProject(id: string, silent = false) {
         return;
     }
 
-    if (!silent) console.log("Deleted successfully.");
     await Promise.all(keys.map((key) => kv.delete(key)));
+    if (!silent) console.log("Deleted successfully.");
 }
 
 export const deleteSession = async (id: string, toDelete: string) => {

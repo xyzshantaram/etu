@@ -1,4 +1,5 @@
 import * as storage from "./storage.ts";
+import { Command } from "commander";
 import { Result } from "@/oxide";
 import { colors } from "@cliffy/ansi/colors";
 import { dir } from "@cross/dir";
@@ -171,3 +172,49 @@ if (!dataDir) scream("Couldn't find your data directory! Bailing.");
 
 export const dataPath = path.join(dataDir!, "etu");
 await Deno.mkdir(dataPath, { recursive: true });
+
+// ---------------------------------------------------------------------------
+// Pluggable I/O helpers
+// ---------------------------------------------------------------------------
+
+interface CommandResult<T = unknown> {
+    ok: true;
+    data: T;
+}
+
+interface CommandError {
+    ok: false;
+    error: string;
+}
+
+/**
+ * Output handler: checks the global --structured flag. If structured mode, prints a
+ * { ok: true, ...data } object to stdout. Otherwise calls formatFn(data),
+ * which handles the human-readable text output.
+ */
+export function respond<T>(
+    cmd: Command,
+    formatFn: (data: T) => void,
+    data: T,
+): void {
+    if ((cmd.optsWithGlobals() as Record<string, unknown>).structured) {
+        const result: CommandResult<T> = { ok: true, data };
+        console.log(JSON.stringify(result, null, 2));
+    } else {
+        formatFn(data);
+    }
+}
+
+/**
+ * Error handler: checks the global --structured flag. If structured mode, prints a
+ * { ok: false, error: msg } object to stdout and exits with code 1.
+ * Otherwise calls the existing scream() for formatted stderr output.
+ */
+export function fail(cmd: Command, msg: string): never {
+    if ((cmd.optsWithGlobals() as Record<string, unknown>).structured) {
+        const result: CommandError = { ok: false, error: msg };
+        console.log(JSON.stringify(result, null, 2));
+        Deno.exit(1);
+    }
+    return scream(msg);
+}
