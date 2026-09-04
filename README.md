@@ -2,6 +2,8 @@
 
 A CLI time-clock for freelancers.
 
+![etu project list and etu log, showing a project, three sessions with their durations, and the billing total](res/shot-log.png)
+
 ## Usage
 
 See `etu help [command]` for detailed help.
